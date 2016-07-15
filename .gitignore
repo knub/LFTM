@@ -46,3 +46,9 @@ Temporary Items
 .idea
 *.iml
 out/
+
+# Other stuff
+documentation/
+bin/
+jar/
+target/
