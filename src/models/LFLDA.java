@@ -5,12 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import utility.FuncUtils;
 import utility.LBFGS;
@@ -30,6 +25,7 @@ import cc.mallet.types.MatrixOps;
  * @author Dat Quoc Nguyen
  */
 
+@SuppressWarnings("ALL")
 public class LFLDA
 {
     public double alpha; // Hyper-parameter alpha
@@ -99,44 +95,44 @@ public class LFLDA
     public String tAssignsFilePath = "";
     public int savestep = 0;
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, int inNumTopics,
-            double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords)
         throws Exception
     {
-        this(pathToCorpus, pathToWordVectorsFile, inNumTopics, inAlpha, inBeta, inLambda,
+        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
                 inNumInitIterations, inNumIterations, inTopWords, "LFLDA");
     }
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, int inNumTopics,
-            double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords, String inExpName)
         throws Exception
     {
-        this(pathToCorpus, pathToWordVectorsFile, inNumTopics, inAlpha, inBeta, inLambda,
+        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
                 inNumInitIterations, inNumIterations, inTopWords, inExpName, "", 0);
     }
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, int inNumTopics,
-            double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords, String inExpName, String pathToTAfile)
         throws Exception
     {
-        this(pathToCorpus, pathToWordVectorsFile, inNumTopics, inAlpha, inBeta, inLambda,
+        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
                 inNumInitIterations, inNumIterations, inTopWords, inExpName, pathToTAfile, 0);
     }
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, int inNumTopics,
-            double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
         throws Exception
     {
-        this(pathToCorpus, pathToWordVectorsFile, inNumTopics, inAlpha, inBeta, inLambda,
+        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
                 inNumInitIterations, inNumIterations, inTopWords, inExpName, "", inSaveStep);
     }
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, int inNumTopics,
-            double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords, String inExpName, String pathToTAfile,
             int inSaveStep)
         throws Exception
@@ -155,6 +151,19 @@ public class LFLDA
         corpusPath = pathToCorpus;
         folderPath = pathToCorpus.substring(0,
                 Math.max(pathToCorpus.lastIndexOf("/"), pathToCorpus.lastIndexOf("\\")) + 1);
+
+        System.out.println("Reading vector words: " + pathToVectorWords);
+        Set<String> vectorWords = new HashSet<>();
+        BufferedReader br1 = null;
+        try {
+            br1 = new BufferedReader(new FileReader(pathToVectorWords));
+            for (String word; (word = br1.readLine()) != null;) {
+                vectorWords.add(word);
+            }
+        }
+        catch (Exception e) {
+            throw e;
+        }
 
         System.out.println("Reading topic modeling corpus: " + pathToCorpus);
 
@@ -177,14 +186,15 @@ public class LFLDA
                 List<Integer> document = new ArrayList<Integer>();
 
                 for (String word : words) {
-                    if (word2IdVocabulary.containsKey(word)) {
-                        document.add(word2IdVocabulary.get(word));
-                    }
-                    else {
-                        indexWord += 1;
-                        word2IdVocabulary.put(word, indexWord);
-                        id2WordVocabulary.put(indexWord, word);
-                        document.add(indexWord);
+                    if (vectorWords.contains(word)) {
+                        if (word2IdVocabulary.containsKey(word)) {
+                            document.add(word2IdVocabulary.get(word));
+                        } else {
+                            indexWord += 1;
+                            word2IdVocabulary.put(word, indexWord);
+                            id2WordVocabulary.put(indexWord, word);
+                            document.add(indexWord);
+                        }
                     }
                 }
 
@@ -194,7 +204,7 @@ public class LFLDA
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            throw e;
         }
 
         vocabularySize = word2IdVocabulary.size();
@@ -699,7 +709,7 @@ public class LFLDA
     public static void main(String args[])
         throws Exception
     {
-        LFLDA lflda = new LFLDA("test/corpus.txt", "test/wordVectors.txt", 4, 0.1, 0.01, 0.6, 2000,
+        LFLDA lflda = new LFLDA("test/corpus.txt", "test/wordVectors.txt", "test/vectorWords.txt", 4, 0.1, 0.01, 0.6, 2000,
                 200, 20, "testLFLDA");
         lflda.writeParameters();
         lflda.inference();

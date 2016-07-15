@@ -14,6 +14,9 @@ public class CmdArgs
     @Option(name = "-vectors", usage = "Specify path to the file containing word vectors")
     public String vectors = "";
 
+    @Option(name = "-vocabulary", usage = "Specify vocabulary to use", required = true)
+    public String vocabulary = "";
+
     @Option(name = "-ntopics", usage = "Specify number of topics")
     public int ntopics = 20;
 

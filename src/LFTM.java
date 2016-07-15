@@ -29,8 +29,8 @@ public class LFTM
             parser.parseArgument(args);
 
             if (cmdArgs.model.equals("LFLDA")) {
-                LFLDA lflda = new LFLDA(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.ntopics,
-                        cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
+                LFLDA lflda = new LFLDA(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.vocabulary,
+                        cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
                         cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName,
                         cmdArgs.initTopicAssgns, cmdArgs.savestep);
                 lflda.inference();

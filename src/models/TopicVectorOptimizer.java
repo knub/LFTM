@@ -14,6 +14,7 @@ import cc.mallet.types.MatrixOps;
  * @author Dat Quoc Nguyen
  */
 
+@SuppressWarnings("ALL")
 public class TopicVectorOptimizer
 	implements Optimizable.ByGradientValue
 {

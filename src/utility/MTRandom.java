@@ -12,6 +12,7 @@ public class MTRandom
 
     public static double nextDouble()
     {
+//        return 0.5;
         return rand.nextDouble();
     }
 
