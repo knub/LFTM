@@ -1,4 +1,4 @@
-package utility;
+package lftm.utility;
 
 public class MTRandom
 {

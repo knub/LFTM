@@ -14,7 +14,7 @@
  "Representations of Quasi-Newton Matrices and Their Use in Limited
  Memory Methods"
  */
-package utility;
+package lftm.utility;
 
 import java.util.LinkedList;
 import java.util.logging.Logger;

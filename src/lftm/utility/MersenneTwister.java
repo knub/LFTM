@@ -1,4 +1,4 @@
-package utility;
+package lftm.utility;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

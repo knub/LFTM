@@ -1,4 +1,4 @@
-package utility;
+package lftm.utility;
 
 import org.kohsuke.args4j.Option;
 

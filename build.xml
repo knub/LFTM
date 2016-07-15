@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="LFTM" basedir="." default="main">
+<project name="lftm.LFTM" basedir="." default="main">
 
     <property name="src.dir"     value="src"/>
 	<property name="lib.dir" location="lib" />
     <property name="classes.dir" value="bin"/>
     <property name="jar.dir"     value="jar"/>
 
-    <property name="main-class"  value="LFTM"/>
+    <property name="main-class"  value="lftm.LFTM"/>
 
 	<path id="build.classpath">
 		<fileset dir="${lib.dir}">

@@ -1,4 +1,4 @@
-package utility;
+package lftm.utility;
 
 import java.util.Collections;
 import java.util.Comparator;

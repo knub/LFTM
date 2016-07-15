@@ -1,4 +1,4 @@
-package eval;
+package lftm.eval;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import utility.FuncUtils;
+import lftm.utility.FuncUtils;
 
 /**
  * Implementation of the Purity and NMI clustering evaluation scores, as described in Section 16.3

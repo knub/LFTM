@@ -1,11 +1,13 @@
-import models.LFDMM;
-import models.LFLDA;
+package lftm;
+
+import lftm.models.LFDMM;
+import lftm.models.LFLDA;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
-import utility.CmdArgs;
-import eval.ClusteringEval;
+import lftm.utility.CmdArgs;
+import lftm.eval.ClusteringEval;
 
 /**
  * Implementations of the LF-LDA and LF-DMM latent feature topic models, using collapsed Gibbs
@@ -69,7 +71,7 @@ public class LFTM
 
     public static void help(CmdLineParser parser)
     {
-        System.out.println("java -jar LFTM.jar [options ...] [arguments...]");
+        System.out.println("java -jar lftm.LFTM.jar [options ...] [arguments...]");
         parser.printUsage(System.out);
     }
 }

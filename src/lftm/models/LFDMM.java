@@ -1,4 +1,4 @@
-package models;
+package lftm.models;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import utility.FuncUtils;
-import utility.LBFGS;
-import utility.Parallel;
+import lftm.utility.FuncUtils;
+import lftm.utility.LBFGS;
+import lftm.utility.Parallel;
 import cc.mallet.optimize.InvalidOptimizableException;
 import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.MatrixOps;

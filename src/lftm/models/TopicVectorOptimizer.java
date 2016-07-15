@@ -1,4 +1,4 @@
-package models;
+package lftm.models;
 
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.types.MatrixOps;

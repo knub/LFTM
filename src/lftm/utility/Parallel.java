@@ -1,4 +1,4 @@
-package utility;
+package lftm.utility;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
