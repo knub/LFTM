@@ -460,17 +460,16 @@ public class LFLDA
         for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
             int docSize = corpus.get(dIndex).size();
             for (int wIndex = 0; wIndex < docSize; wIndex++) {
-                // Get current word
                 int word = corpus.get(dIndex).get(wIndex);// wordID
                 int subtopic = topicAssignments.get(dIndex).get(wIndex);
                 int topic = subtopic % numTopics;
 
                 docTopicCount[dIndex][topic] -= 1;
-                if (subtopic == topic) {
+                if (topic == subtopic) { // LF(w|t) + LDA(t|d)
                     topicWordCountLF[topic][word] -= 1;
                     sumTopicWordCountLF[topic] -= 1;
                 }
-                else {
+                else { // LDA(w|t) + LDA(t|d)
                     topicWordCountLDA[topic][word] -= 1;
                     sumTopicWordCountLDA[topic] -= 1;
                 }
@@ -490,7 +489,7 @@ public class LFLDA
                 topic = subtopic % numTopics;
 
                 docTopicCount[dIndex][topic] += 1;
-                if (subtopic == topic) {
+                if (topic == subtopic) {
                     topicWordCountLF[topic][word] += 1;
                     sumTopicWordCountLF[topic] += 1;
                 }
@@ -514,7 +513,7 @@ public class LFLDA
                 int topic = subtopic % numTopics;
 
                 docTopicCount[dIndex][topic] -= 1;
-                if (subtopic == topic) { // LF(w|t) + LDA(t|d)
+                if (topic == subtopic) { // LF(w|t) + LDA(t|d)
                     topicWordCountLF[topic][word] -= 1;
                     sumTopicWordCountLF[topic] -= 1;
                 }
@@ -550,7 +549,6 @@ public class LFLDA
                 // Update topic assignments
                 topicAssignments.get(dIndex).set(wIndex, subtopic);
             }
-
         }
     }
 
