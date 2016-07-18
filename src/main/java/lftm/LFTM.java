@@ -32,10 +32,9 @@ public class LFTM
         CmdArgs cmdArgs = new CmdArgs();
         CmdLineParser parser = new CmdLineParser(cmdArgs);
 
-        ParallelTopicModel tm = ParallelTopicModel.read(
-                new File("/data/wikipedia/2016-06-21/topic-models/topic.256-400.first-2000.alpha-001.beta-001.model"));
-        System.out.println("Loaded model");
+        String tmPath = "/data/wikipedia/2016-06-21/topic-models/topic.256-400.first-2000.alpha-001.beta-001.model";
 
+        ParallelTopicModel tm = ParallelTopicModel.read(new File(tmPath));
         ArrayList<TopicAssignment> topicAssignments = tm.getData();
         TopicAssignment instance = topicAssignments.get(0);
 
@@ -51,7 +50,7 @@ public class LFTM
 
             switch (cmdArgs.model) {
                 case "LFLDA":
-                    LFLDA lflda = new LFLDA(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.vocabulary,
+                    LFLDA lflda = new LFLDA(tmPath, cmdArgs.vectors, cmdArgs.vocabulary,
                             cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
                             cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName,
                             cmdArgs.initTopicAssgns, cmdArgs.savestep);

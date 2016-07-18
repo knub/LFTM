@@ -1,12 +1,12 @@
 package lftm.models;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
+import cc.mallet.topics.ParallelTopicModel;
+import cc.mallet.topics.TopicAssignment;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
 import lftm.utility.FuncUtils;
 import lftm.utility.LBFGS;
 import lftm.utility.Parallel;
@@ -77,7 +77,7 @@ public class LFLDA
     // Path to the directory containing the corpus
     public String folderPath;
     // Path to the topic modeling corpus
-    public String corpusPath;
+    public String topicModelPath;
     public String vectorFilePath;
 
     public double[][] wordVectors; // Vector representations for words
@@ -95,10 +95,10 @@ public class LFLDA
     public String tAssignsFilePath = "";
     public int savestep = 0;
 
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
+    public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-            int inNumIterations, int inTopWords, String inExpName, String pathToTAfile,
-            int inSaveStep)
+                 int inNumIterations, int inTopWords, String inExpName, String pathToTAfile,
+                 int inSaveStep)
         throws Exception
     {
         alpha = inAlpha;
@@ -112,9 +112,13 @@ public class LFLDA
         expName = inExpName;
         orgExpName = expName;
         vectorFilePath = pathToWordVectorsFile;
-        corpusPath = pathToCorpus;
-        folderPath = pathToCorpus.substring(0,
-                Math.max(pathToCorpus.lastIndexOf("/"), pathToCorpus.lastIndexOf("\\")) + 1);
+        topicModelPath = pathToTopicModel;
+        folderPath = topicModelPath.substring(0,
+                        Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
+
+        System.out.println("Loading topic model " + pathToTopicModel);
+        ParallelTopicModel tm = ParallelTopicModel.read(
+                new File(pathToTopicModel));
 
         System.out.println("Reading vector words: " + pathToVectorWords);
         Set<String> vectorWords = new HashSet<>();
@@ -129,7 +133,7 @@ public class LFLDA
             throw e;
         }
 
-        System.out.println("Reading topic modeling corpus: " + pathToCorpus);
+        System.out.println("Reading topic modeling corpus from topic model");
 
         word2IdVocabulary = new HashMap<String, Integer>();
         id2WordVocabulary = new HashMap<Integer, String>();
@@ -137,19 +141,26 @@ public class LFLDA
         numDocuments = 0;
         numWordsInCorpus = 0;
 
-        BufferedReader br = null;
+
         try {
             int indexWord = -1;
-            br = new BufferedReader(new FileReader(pathToCorpus));
-            for (String doc; (doc = br.readLine()) != null;) {
 
-                if (doc.trim().length() == 0)
+            // for all documents
+            for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext();) {
+                TopicAssignment doc = it.next();
+                int docLength = doc.topicSequence.size();
+
+                FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
+                Alphabet docAlphabet = docFeatures.getAlphabet();
+                int[] features = docFeatures.getFeatures();
+                assert docLength == features.length : "Document length does not match " + features.length + " - " + docLength;
+
+                if (docLength == 0)
                     continue;
 
-                String[] words = doc.trim().split("\\s+");
                 List<Integer> document = new ArrayList<Integer>();
-
-                for (String word : words) {
+                for (int i = 0; i < docLength; i += 1) {
+                    String word = (String) docAlphabet.lookupObject(features[i]);
                     if (vectorWords.contains(word)) {
                         if (word2IdVocabulary.containsKey(word)) {
                             document.add(word2IdVocabulary.get(word));
@@ -193,23 +204,21 @@ public class LFLDA
         expDotProductValues = new double[numTopics][vocabularySize];
         sumExpValues = new double[numTopics];
 
-        System.out
-                .println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
+        System.out.println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
         System.out.println("Vocabuary size: " + vocabularySize);
         System.out.println("Number of topics: " + numTopics);
         System.out.println("alpha: " + alpha);
         System.out.println("beta: " + beta);
         System.out.println("lambda: " + lambda);
         System.out.println("Number of initial sampling iterations: " + numInitIterations);
-        System.out.println("Number of EM-style sampling iterations for the LF-LDA model: "
-                + numIterations);
+        System.out.println("Number of EM-style sampling iterations for the LF-LDA model: " + numIterations);
         System.out.println("Number of top topical words: " + topWords);
 
-        tAssignsFilePath = pathToTAfile;
-        if (tAssignsFilePath.length() > 0)
-            initialize(tAssignsFilePath);
-        else
-            initialize();
+//        tAssignsFilePath = pathToTAfile;
+//        if (tAssignsFilePath.length() > 0)
+//            initialize(tAssignsFilePath);
+//        else
+//            initialize();
 
     }
 
@@ -521,7 +530,7 @@ public class LFLDA
     {
         BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName + ".paras"));
         writer.write("-model" + "\t" + "LFLDA");
-        writer.write("\n-corpus" + "\t" + corpusPath);
+        writer.write("\n-topicmodel" + "\t" + topicModelPath);
         writer.write("\n-vectors" + "\t" + vectorFilePath);
         writer.write("\n-ntopics" + "\t" + numTopics);
         writer.write("\n-alpha" + "\t" + alpha);
