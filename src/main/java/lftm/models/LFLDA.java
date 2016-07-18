@@ -142,7 +142,6 @@ public class LFLDA
         numWordsInCorpus = 0;
         vocabularySize = tm.getAlphabet().size();
 
-        vocabularySize = word2IdVocabulary.size();
         docTopicCount = new int[numDocuments][numTopics];
         sumDocTopicCount = new int[numDocuments];
         topicWordCountLDA = new int[numTopics][vocabularySize];
