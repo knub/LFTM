@@ -98,8 +98,7 @@ public class LFLDA
 
     public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-                 int inNumIterations, int inTopWords, String inExpName, String pathToTAfile,
-                 int inSaveStep)
+                 int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
         throws Exception
     {
         alpha = inAlpha;
@@ -142,8 +141,6 @@ public class LFLDA
         numDocuments = tm.getData().size();
         numWordsInCorpus = 0;
         vocabularySize = tm.getAlphabet().size();
-
-
 
         vocabularySize = word2IdVocabulary.size();
         docTopicCount = new int[numDocuments][numTopics];
