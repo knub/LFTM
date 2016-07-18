@@ -9,6 +9,7 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import lftm.utility.FuncUtils;
 import lftm.utility.LBFGS;
+import lftm.utility.MTRandom;
 import lftm.utility.Parallel;
 import cc.mallet.optimize.InvalidOptimizableException;
 import cc.mallet.optimize.Optimizer;
@@ -138,49 +139,11 @@ public class LFLDA
         word2IdVocabulary = new HashMap<String, Integer>();
         id2WordVocabulary = new HashMap<Integer, String>();
         corpus = new ArrayList<List<Integer>>();
-        numDocuments = 0;
+        numDocuments = tm.getData().size();
         numWordsInCorpus = 0;
+        vocabularySize = tm.getAlphabet().size();
 
 
-        try {
-            int indexWord = -1;
-
-            // for all documents
-            for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext();) {
-                TopicAssignment doc = it.next();
-                int docLength = doc.topicSequence.size();
-
-                FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
-                Alphabet docAlphabet = docFeatures.getAlphabet();
-                int[] features = docFeatures.getFeatures();
-                assert docLength == features.length : "Document length does not match " + features.length + " - " + docLength;
-
-                if (docLength == 0)
-                    continue;
-
-                List<Integer> document = new ArrayList<Integer>();
-                for (int i = 0; i < docLength; i += 1) {
-                    String word = (String) docAlphabet.lookupObject(features[i]);
-                    if (vectorWords.contains(word)) {
-                        if (word2IdVocabulary.containsKey(word)) {
-                            document.add(word2IdVocabulary.get(word));
-                        } else {
-                            indexWord += 1;
-                            word2IdVocabulary.put(word, indexWord);
-                            id2WordVocabulary.put(indexWord, word);
-                            document.add(indexWord);
-                        }
-                    }
-                }
-
-                numDocuments++;
-                numWordsInCorpus += document.size();
-                corpus.add(document);
-            }
-        }
-        catch (Exception e) {
-            throw e;
-        }
 
         vocabularySize = word2IdVocabulary.size();
         docTopicCount = new int[numDocuments][numTopics];
@@ -219,6 +182,67 @@ public class LFLDA
 //            initialize(tAssignsFilePath);
 //        else
 //            initialize();
+        topicAssignments = new ArrayList<List<Integer>>();
+        try {
+            int indexWord = -1;
+            int docId = 0;
+            // for all documents
+            for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext();) {
+                List<Integer> topics = new ArrayList<Integer>();
+                TopicAssignment doc = it.next();
+                FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
+                Alphabet docAlphabet = docFeatures.getAlphabet();
+                int[] features = docFeatures.getFeatures();
+                int[] topicFeatures = doc.topicSequence.getFeatures();
+
+                int docLength = doc.topicSequence.size();
+                assert docLength == features.length : "Document length does not match " + features.length + " - " + docLength;
+                if (docLength == 0)
+                    continue;
+
+                List<Integer> document = new ArrayList<Integer>();
+                // for all words
+                for (int i = 0; i < docLength; i += 1) {
+                    int wordId = features[i];
+                    String word = (String) docAlphabet.lookupObject(wordId);
+                    if (vectorWords.contains(word)) {
+                        if (word2IdVocabulary.containsKey(word)) {
+                            document.add(word2IdVocabulary.get(word));
+                        } else {
+                            indexWord += 1;
+                            word2IdVocabulary.put(word, indexWord);
+                            id2WordVocabulary.put(indexWord, word);
+                            document.add(indexWord);
+                        }
+
+                        /** Topic initialization **/
+                        int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
+                        int subtopic = topicFeatures[i] + topicOffset;
+                        int topic = subtopic % numTopics;
+                        if (topic == subtopic) { // Generated from the latent feature component
+                            topicWordCountLF[topic][wordId] += 1;
+                            sumTopicWordCountLF[topic] += 1;
+                        }
+                        else {// Generated from the Dirichlet multinomial component
+                            topicWordCountLDA[topic][wordId] += 1;
+                            sumTopicWordCountLDA[topic] += 1;
+                        }
+                        docTopicCount[docId][topic] += 1;
+                        sumDocTopicCount[docId] += 1;
+
+                        topics.add(subtopic);
+                    }
+                    topicAssignments.add(topics);
+                }
+
+                numWordsInCorpus += document.size();
+                corpus.add(document);
+                docId += 1;
+            }
+        }
+        catch (Exception e) {
+            throw e;
+        }
 
     }
 
