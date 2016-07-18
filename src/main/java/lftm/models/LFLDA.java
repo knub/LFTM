@@ -97,42 +97,6 @@ public class LFLDA
 
     public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-            int inNumIterations, int inTopWords)
-        throws Exception
-    {
-        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
-                inNumInitIterations, inNumIterations, inTopWords, "LFLDA");
-    }
-
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-            int inNumIterations, int inTopWords, String inExpName)
-        throws Exception
-    {
-        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
-                inNumInitIterations, inNumIterations, inTopWords, inExpName, "", 0);
-    }
-
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-            int inNumIterations, int inTopWords, String inExpName, String pathToTAfile)
-        throws Exception
-    {
-        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
-                inNumInitIterations, inNumIterations, inTopWords, inExpName, pathToTAfile, 0);
-    }
-
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
-            int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
-        throws Exception
-    {
-        this(pathToCorpus, pathToWordVectorsFile, pathToVectorWords, inNumTopics, inAlpha, inBeta, inLambda,
-                inNumInitIterations, inNumIterations, inTopWords, inExpName, "", inSaveStep);
-    }
-
-    public LFLDA(String pathToCorpus, String pathToWordVectorsFile, String pathToVectorWords,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
             int inNumIterations, int inTopWords, String inExpName, String pathToTAfile,
             int inSaveStep)
         throws Exception
@@ -702,14 +666,5 @@ public class LFLDA
         writeDocTopicPros();
         writeTopicAssignments();
         writeTopicWordPros();
-    }
-
-    public static void main(String args[])
-        throws Exception
-    {
-        LFLDA lflda = new LFLDA("test/corpus.txt", "test/wordVectors.txt", "test/vectorWords.txt", 4, 0.1, 0.01, 0.6, 2000,
-                200, 20, "testLFLDA");
-        lflda.writeParameters();
-        lflda.inference();
     }
 }
