@@ -1,5 +1,7 @@
 package lftm;
 
+import cc.mallet.topics.ParallelTopicModel;
+import cc.mallet.topics.TopicAssignment;
 import lftm.models.LFDMM;
 import lftm.models.LFLDA;
 
@@ -8,6 +10,9 @@ import org.kohsuke.args4j.CmdLineParser;
 
 import lftm.utility.CmdArgs;
 import lftm.eval.ClusteringEval;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Implementations of the LF-LDA and LF-DMM latent feature topic models, using collapsed Gibbs
@@ -23,10 +28,23 @@ import lftm.eval.ClusteringEval;
 @SuppressWarnings("WeakerAccess")
 public class LFTM
 {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws Exception {
         CmdArgs cmdArgs = new CmdArgs();
         CmdLineParser parser = new CmdLineParser(cmdArgs);
+
+        ParallelTopicModel tm = ParallelTopicModel.read(
+                new File("/home/knub/Repositories/master-thesis/models/topic-models/topic.full.alpha-1-100.256-400.model"));
+        System.out.println("Loaded model");
+
+        ArrayList<TopicAssignment> topicAssignments = tm.getData();
+        TopicAssignment instance = topicAssignments.get(0);
+
+        System.out.println(instance);
+        System.out.println(instance.topicDistribution);
+        System.out.println(instance.topicSequence);
+
+        System.exit(1);
+
         try {
 
             parser.parseArgument(args);
