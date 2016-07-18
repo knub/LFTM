@@ -33,7 +33,7 @@ public class LFTM
         CmdLineParser parser = new CmdLineParser(cmdArgs);
 
         ParallelTopicModel tm = ParallelTopicModel.read(
-                new File("/home/knub/Repositories/master-thesis/models/topic-models/topic.full.alpha-1-100.256-400.model"));
+                new File("/data/wikipedia/2016-06-21/topic-models/topic.256-400.first-2000.alpha-001.beta-001.model"));
         System.out.println("Loaded model");
 
         ArrayList<TopicAssignment> topicAssignments = tm.getData();

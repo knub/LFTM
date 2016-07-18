@@ -49,6 +49,6 @@ out/
 
 # Other stuff
 documentation/
-bin/
+old_bin/
 jar/
 target/
