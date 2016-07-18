@@ -157,11 +157,6 @@ public class LFLDA
         alphaSum = numTopics * alpha;
         betaSum = vocabularySize * beta;
 
-        readWordVectorsFile(vectorFilePath);
-        topicVectors = new double[numTopics][vectorSize];
-        dotProductValues = new double[numTopics][vocabularySize];
-        expDotProductValues = new double[numTopics][vocabularySize];
-        sumExpValues = new double[numTopics];
 
         System.out.println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
         System.out.println("Vocabuary size: " + vocabularySize);
@@ -173,11 +168,6 @@ public class LFLDA
         System.out.println("Number of EM-style sampling iterations for the LF-LDA model: " + numIterations);
         System.out.println("Number of top topical words: " + topWords);
 
-//        tAssignsFilePath = pathToTAfile;
-//        if (tAssignsFilePath.length() > 0)
-//            initialize(tAssignsFilePath);
-//        else
-//            initialize();
         topicAssignments = new ArrayList<List<Integer>>();
         try {
             int indexWord = -1;
@@ -239,6 +229,12 @@ public class LFLDA
         catch (Exception e) {
             throw e;
         }
+
+        readWordVectorsFile(vectorFilePath);
+        topicVectors = new double[numTopics][vectorSize];
+        dotProductValues = new double[numTopics][vocabularySize];
+        expDotProductValues = new double[numTopics][vocabularySize];
+        sumExpValues = new double[numTopics];
 
     }
 
