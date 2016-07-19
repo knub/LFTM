@@ -160,7 +160,7 @@ public class LFLDA
 
         topicAssignments = new ArrayList<List<Integer>>();
         try {
-            int indexWord = -1;
+            int lastWordId = -1;
             int docId = 0;
             // for all documents
             for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext();) {
@@ -179,16 +179,19 @@ public class LFLDA
                 List<Integer> document = new ArrayList<Integer>();
                 // for all words
                 for (int i = 0; i < docLength; i += 1) {
-                    int wordId = features[i];
-                    String word = (String) docAlphabet.lookupObject(wordId);
+                    int originalWordId = features[i];
+                    String word = (String) docAlphabet.lookupObject(originalWordId);
                     if (vectorWords.contains(word)) {
+                        int wordId = -1;
                         if (word2IdVocabulary.containsKey(word)) {
-                            document.add(word2IdVocabulary.get(word));
+                            wordId = word2IdVocabulary.get(word);
+                            document.add(wordId);
                         } else {
-                            indexWord += 1;
-                            word2IdVocabulary.put(word, indexWord);
-                            id2WordVocabulary.put(indexWord, word);
-                            document.add(indexWord);
+                            wordId = lastWordId + 1;
+                            word2IdVocabulary.put(word, wordId);
+                            id2WordVocabulary.put(wordId, word);
+                            document.add(wordId);
+                            lastWordId = wordId;
                         }
 
                         /** Topic initialization **/
@@ -238,13 +241,6 @@ public class LFLDA
             }
         }
         it = tm.getAlphabet().iterator();
-        while (it.hasNext()) {
-            String w = (String) it.next();
-            int idx = tm.getAlphabet().lookupIndex(w);
-            if (idx >= size) {
-                throw new Exception("There seems to a gap in the features, so the highest number is not smaller than the size");
-            }
-        }
         return size;
     }
 
@@ -293,38 +289,6 @@ public class LFLDA
             }
         }
     }
-
-    public void initialize()
-        throws IOException
-    {
-        System.out.println("Randomly initializing topic assignments ...");
-        topicAssignments = new ArrayList<List<Integer>>();
-
-        for (int docId = 0; docId < numDocuments; docId++) {
-            List<Integer> topics = new ArrayList<Integer>();
-            int docSize = corpus.get(docId).size();
-            for (int j = 0; j < docSize; j++) {
-                int wordId = corpus.get(docId).get(j);
-
-                int subtopic = FuncUtils.nextDiscrete(multiPros);
-                int topic = subtopic % numTopics;
-                if (topic == subtopic) { // Generated from the latent feature component
-                    topicWordCountLF[topic][wordId] += 1;
-                    sumTopicWordCountLF[topic] += 1;
-                }
-                else {// Generated from the Dirichlet multinomial component
-                    topicWordCountLDA[topic][wordId] += 1;
-                    sumTopicWordCountLDA[topic] += 1;
-                }
-                docTopicCount[docId][topic] += 1;
-                sumDocTopicCount[docId] += 1;
-
-                topics.add(subtopic);
-            }
-            topicAssignments.add(topics);
-        }
-    }
-
 
     public void inference()
         throws IOException
