@@ -320,54 +320,6 @@ public class LFLDA
         }
     }
 
-    public void initialize(String pathToTopicAssignmentFile)
-    {
-        System.out.println("Reading topic-assignment file: " + pathToTopicAssignmentFile);
-
-        topicAssignments = new ArrayList<List<Integer>>();
-
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(pathToTopicAssignmentFile));
-            int docId = 0;
-            int numWords = 0;
-            for (String line; (line = br.readLine()) != null;) {
-                String[] strTopics = line.trim().split("\\s+");
-                List<Integer> topics = new ArrayList<Integer>();
-                for (int j = 0; j < strTopics.length; j++) {
-                    int wordId = corpus.get(docId).get(j);
-
-                    int subtopic = new Integer(strTopics[j]);
-                    int topic = subtopic % numTopics;
-
-                    if (topic == subtopic) { // Generated from the latent feature component
-                        topicWordCountLF[topic][wordId] += 1;
-                        sumTopicWordCountLF[topic] += 1;
-                    }
-                    else {// Generated from the Dirichlet multinomial component
-                        topicWordCountLDA[topic][wordId] += 1;
-                        sumTopicWordCountLDA[topic] += 1;
-                    }
-                    docTopicCount[docId][topic] += 1;
-                    sumDocTopicCount[docId] += 1;
-
-                    topics.add(subtopic);
-                    numWords++;
-                }
-                topicAssignments.add(topics);
-                docId++;
-            }
-
-            if ((docId != numDocuments) || (numWords != numWordsInCorpus)) {
-                System.out
-                        .println("The topic modeling corpus and topic assignment file are not consistent!!!");
-                throw new Exception();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void inference()
         throws IOException
