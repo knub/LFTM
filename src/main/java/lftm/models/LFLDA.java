@@ -2,6 +2,7 @@ package lftm.models;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
@@ -162,7 +163,6 @@ public class LFLDA
         int docId = 0;
         // for all documents
         for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext(); ) {
-            List<Integer> topics = new ArrayList<Integer>();
             TopicAssignment doc = it.next();
             FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
             Alphabet docAlphabet = docFeatures.getAlphabet();
@@ -175,6 +175,7 @@ public class LFLDA
                 continue;
 
             List<Integer> document = new ArrayList<Integer>();
+            List<Integer> topics = new ArrayList<Integer>();
             // for all words
             for (int i = 0; i < docLength; i += 1) {
                 int originalWordId = features[i];
@@ -208,11 +209,11 @@ public class LFLDA
 
                     topics.add(subtopic);
                 }
-                topicAssignments.add(topics);
             }
 
             numWordsInCorpus += document.size();
             corpus.add(document);
+            topicAssignments.add(topics);
             docId += 1;
         }
 
@@ -282,8 +283,7 @@ public class LFLDA
         }
     }
 
-    public void inference()
-        throws IOException
+    public void inference() throws IOException
     {
         System.out.println("Running Gibbs sampling inference: ");
 
@@ -317,6 +317,7 @@ public class LFLDA
         dotProductValues = new double[numTopics][vocabularySize];
         expDotProductValues = new double[numTopics][vocabularySize];
 
+        final AtomicInteger finishedTopics = new AtomicInteger(0);
         Parallel.loop(numTopics, new Parallel.LoopInt()
         {
             @Override
@@ -351,22 +352,35 @@ public class LFLDA
                         }
                     }
                     catch (InvalidOptimizableException e) {
+                        System.out.print("ERROR-" + topic);
                         e.printStackTrace();
                         check = true;
                     }
                     rate = rate * 10;
                 }
+                int currentValue = finishedTopics.incrementAndGet();
+                double percentage = ((double) currentValue) / numTopics;
+                System.out.print(String.format("%.2f ", percentage));
+                System.out.flush();
             }
         });
+        System.out.println();
     }
 
     public void sampleSingleIteration()
     {
+        System.out.println("\t\tRunning iteration ...");
         for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
+            if (dIndex % 100 == 0) {
+                System.out.print(dIndex + " ");
+                System.out.flush();
+            }
             int docSize = corpus.get(dIndex).size();
             for (int wIndex = 0; wIndex < docSize; wIndex++) {
                 int word = corpus.get(dIndex).get(wIndex);// wordID
-                int subtopic = topicAssignments.get(dIndex).get(wIndex);
+                int subtopic = topicAssignments
+                        .get(dIndex)
+                        .get(wIndex);
                 int topic = subtopic % numTopics;
 
                 docTopicCount[dIndex][topic] -= 1;
