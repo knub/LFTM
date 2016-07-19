@@ -247,6 +247,8 @@ public class LFLDA
         BufferedReader br = new BufferedReader(new FileReader(pathToWordVectorsFile));
         String[] elements = br.readLine().trim().split("\\s+");
         vectorSize = elements.length - 1;
+        System.out.println("Word vector size: " + vectorSize);
+        System.out.println("Vocabulary size: " + vocabularySize);
         wordVectors = new double[vocabularySize][vectorSize];
         String word = elements[0];
         if (word2IdVocabulary.containsKey(word)) {
@@ -266,7 +268,9 @@ public class LFLDA
 
         for (int i = 0; i < vocabularySize; i++) {
             if (MatrixOps.absNorm(wordVectors[i]) == 0.0) {
-                throw new Exception("The word \"" + id2WordVocabulary.get(i) + "\" doesn't have a corresponding vector!!!");
+                String w = id2WordVocabulary.get(i);
+                w = w == null ? "<null>" : w;
+                throw new Exception("The word \"" + w + "\" at index " + i + "doesn't have a corresponding vector!!!");
             }
         }
     }
@@ -274,7 +278,7 @@ public class LFLDA
     public void initialize()
         throws IOException
     {
-        System.out.println("Randomly initialzing topic assignments ...");
+        System.out.println("Randomly initializing topic assignments ...");
         topicAssignments = new ArrayList<List<Integer>>();
 
         for (int docId = 0; docId < numDocuments; docId++) {
