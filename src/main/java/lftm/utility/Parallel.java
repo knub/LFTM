@@ -496,7 +496,7 @@ public class Parallel
 	private static final int NSQT = 6;
 
 	// The pool shared by all fork-join tasks created through this class.
-	private static ForkJoinPool _pool = new ForkJoinPool();
+	private static ForkJoinPool _pool = new ForkJoinPool(13);
 
 	// Serial flag; true for no parallel processing.
 	private static boolean _serial = false;
