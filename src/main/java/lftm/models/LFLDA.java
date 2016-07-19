@@ -130,7 +130,6 @@ public class LFLDA
         corpus = new ArrayList<List<Integer>>();
         numDocuments = tm.getData().size();
         numWordsInCorpus = 0;
-
         vocabularySize = determineVocabularySize(tm, vectorWords);
 
         docTopicCount = new int[numDocuments][numTopics];
@@ -208,8 +207,6 @@ public class LFLDA
                         sumDocTopicCount[docId] += 1;
 
                         topics.add(subtopic);
-                    } else {
-                        vocabularySize -= 1;
                     }
                     topicAssignments.add(topics);
                 }
@@ -231,13 +228,21 @@ public class LFLDA
 
     }
 
-    private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) {
+    private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) throws Exception {
         int size = 0;
         Iterator it = tm.getAlphabet().iterator();
         while (it.hasNext()) {
             String w = (String) it.next();
             if (vectorWords.contains(w)) {
                 size += 1;
+            }
+        }
+        it = tm.getAlphabet().iterator();
+        while (it.hasNext()) {
+            String w = (String) it.next();
+            int idx = tm.getAlphabet().lookupIndex(w);
+            if (idx >= size) {
+                throw new Exception("There seems to a gap in the features, so the highest number is not smaller than the size");
             }
         }
         return size;
@@ -325,13 +330,6 @@ public class LFLDA
         throws IOException
     {
         System.out.println("Running Gibbs sampling inference: ");
-
-        for (int iter = 1; iter <= numInitIterations; iter++) {
-
-            System.out.println("\tInitial sampling iteration: " + (iter));
-
-            sampleSingleInitialIteration();
-        }
 
         for (int iter = 1; iter <= numIterations; iter++) {
 
@@ -430,55 +428,6 @@ public class LFLDA
 
                     multiPros[tIndex] = (docTopicCount[dIndex][tIndex] + alpha) * lambda
                             * expDotProductValues[tIndex][word] / sumExpValues[tIndex];
-
-                    multiPros[tIndex + numTopics] = (docTopicCount[dIndex][tIndex] + alpha)
-                            * (1 - lambda) * (topicWordCountLDA[tIndex][word] + beta)
-                            / (sumTopicWordCountLDA[tIndex] + betaSum);
-
-                }
-                subtopic = FuncUtils.nextDiscrete(multiPros);
-                topic = subtopic % numTopics;
-
-                docTopicCount[dIndex][topic] += 1;
-                if (topic == subtopic) {
-                    topicWordCountLF[topic][word] += 1;
-                    sumTopicWordCountLF[topic] += 1;
-                }
-                else {
-                    topicWordCountLDA[topic][word] += 1;
-                    sumTopicWordCountLDA[topic] += 1;
-                }
-                // Update topic assignments
-                topicAssignments.get(dIndex).set(wIndex, subtopic);
-            }
-        }
-    }
-
-    public void sampleSingleInitialIteration()
-    {
-        for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
-            int docSize = corpus.get(dIndex).size();
-            for (int wIndex = 0; wIndex < docSize; wIndex++) {
-                int word = corpus.get(dIndex).get(wIndex);// wordID
-                int subtopic = topicAssignments.get(dIndex).get(wIndex);
-                int topic = subtopic % numTopics;
-
-                docTopicCount[dIndex][topic] -= 1;
-                if (topic == subtopic) { // LF(w|t) + LDA(t|d)
-                    topicWordCountLF[topic][word] -= 1;
-                    sumTopicWordCountLF[topic] -= 1;
-                }
-                else { // LDA(w|t) + LDA(t|d)
-                    topicWordCountLDA[topic][word] -= 1;
-                    sumTopicWordCountLDA[topic] -= 1;
-                }
-
-                // Sample a pair of topic z and binary indicator variable s
-                for (int tIndex = 0; tIndex < numTopics; tIndex++) {
-
-                    multiPros[tIndex] = (docTopicCount[dIndex][tIndex] + alpha) * lambda
-                            * (topicWordCountLF[tIndex][word] + beta)
-                            / (sumTopicWordCountLF[tIndex] + betaSum);
 
                     multiPros[tIndex + numTopics] = (docTopicCount[dIndex][tIndex] + alpha)
                             * (1 - lambda) * (topicWordCountLDA[tIndex][word] + beta)
