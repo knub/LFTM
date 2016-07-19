@@ -371,7 +371,7 @@ public class LFLDA
     {
         System.out.println("\t\tRunning iteration ...");
         for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
-            if (dIndex % 100 == 0) {
+            if (dIndex % 100000 == 0) {
                 System.out.print(dIndex + " ");
                 System.out.flush();
             }
