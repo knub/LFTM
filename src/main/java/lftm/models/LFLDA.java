@@ -121,17 +121,7 @@ public class LFLDA
                 new File(pathToTopicModel));
 
         System.out.println("Reading vector words: " + pathToVectorWords);
-        Set<String> vectorWords = new HashSet<>();
-        BufferedReader br1 = null;
-        try {
-            br1 = new BufferedReader(new FileReader(pathToVectorWords));
-            for (String word; (word = br1.readLine()) != null;) {
-                vectorWords.add(word);
-            }
-        }
-        catch (Exception e) {
-            throw e;
-        }
+        Set<String> vectorWords = getVectorWords(pathToVectorWords);
 
         System.out.println("Reading topic modeling corpus from topic model");
 
@@ -140,7 +130,8 @@ public class LFLDA
         corpus = new ArrayList<List<Integer>>();
         numDocuments = tm.getData().size();
         numWordsInCorpus = 0;
-        vocabularySize = tm.getAlphabet().size();
+
+        vocabularySize = determineVocabularySize(tm, vectorWords);
 
         docTopicCount = new int[numDocuments][numTopics];
         sumDocTopicCount = new int[numDocuments];
@@ -159,7 +150,7 @@ public class LFLDA
 
 
         System.out.println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
-        System.out.println("Vocabuary size: " + vocabularySize);
+        System.out.println("Vocabulary size: " + vocabularySize);
         System.out.println("Number of topics: " + numTopics);
         System.out.println("alpha: " + alpha);
         System.out.println("beta: " + beta);
@@ -217,6 +208,8 @@ public class LFLDA
                         sumDocTopicCount[docId] += 1;
 
                         topics.add(subtopic);
+                    } else {
+                        vocabularySize -= 1;
                     }
                     topicAssignments.add(topics);
                 }
@@ -236,6 +229,27 @@ public class LFLDA
         expDotProductValues = new double[numTopics][vocabularySize];
         sumExpValues = new double[numTopics];
 
+    }
+
+    private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) {
+        int size = 0;
+        Iterator it = tm.getAlphabet().iterator();
+        while (it.hasNext()) {
+            String w = (String) it.next();
+            if (vectorWords.contains(w)) {
+                size += 1;
+            }
+        }
+        return size;
+    }
+
+    private Set<String> getVectorWords(String pathToVectorWords) throws IOException {
+        Set<String> vectorWords = new HashSet<>();
+        BufferedReader br = new BufferedReader(new FileReader(pathToVectorWords));
+        for (String word; (word = br.readLine()) != null;) {
+            vectorWords.add(word);
+        }
+        return vectorWords;
     }
 
     public void readWordVectorsFile(String pathToWordVectorsFile)
@@ -270,7 +284,7 @@ public class LFLDA
             if (MatrixOps.absNorm(wordVectors[i]) == 0.0) {
                 String w = id2WordVocabulary.get(i);
                 w = w == null ? "<null>" : w;
-                throw new Exception("The word \"" + w + "\" at index " + i + "doesn't have a corresponding vector!!!");
+                throw new Exception("The word \"" + w + "\" at index " + i + " doesn't have a corresponding vector!!!");
             }
         }
     }
