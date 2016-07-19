@@ -332,7 +332,7 @@ public class LFLDA
                                 topicVectors[topic], topicWordCountLF[topic], wordVectors, l2Value);
 
                         Optimizer gd = new LBFGS(optimizer, tolerance);
-                        gd.optimize(600);
+                        gd.optimize(500);
                         optimizer.getParameters(topicVectors[topic]);
                         sumExpValues[topic] = optimizer.computePartitionFunction(
                                 dotProductValues[topic], expDotProductValues[topic]);
