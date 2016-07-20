@@ -124,10 +124,10 @@ public class Main
                         lastWordId = wordId;
                     }
                     if (first) {
-                        pwDocuments.write(wordId + "-" + topicId);
+                        pwDocuments.write(wordId + "#" + topicId);
                         first = false;
                     } else {
-                        pwDocuments.write(" " + wordId + "-" + topicId);
+                        pwDocuments.write(" " + wordId + "#" + topicId);
                     }
                 }
             }
@@ -137,10 +137,10 @@ public class Main
         boolean first = true;
         for (Map.Entry<String, Integer> entry : word2IdVocabulary.entrySet()) {
             if (first) {
-                pwAlphabet.write(entry.getKey() + "-" + entry.getValue());
+                pwAlphabet.write(entry.getKey() + "#" + entry.getValue());
                 first = false;
             } else {
-                pwAlphabet.write(" " + entry.getKey() + "-" + entry.getValue());
+                pwAlphabet.write(" " + entry.getKey() + "#" + entry.getValue());
             }
         }
         pwDocuments.close();

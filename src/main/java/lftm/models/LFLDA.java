@@ -178,7 +178,7 @@ public class LFLDA
         int docId = 0;
         // for all documents
         Alphabet wordAlphabet = tm.wordAlphabet;
-        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda-alphabet"));
         word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
@@ -187,7 +187,7 @@ public class LFLDA
             List<Integer> topics = new ArrayList<Integer>();
             String[] tokens = line.split(" ");
             for (String token : tokens) {
-                String[] wordAndTopic = token.split("-");
+                String[] wordAndTopic = token.split("#");
                 int wordId = Integer.parseInt(wordAndTopic[0]);
                 int topicId = Integer.parseInt(wordAndTopic[1]);
 
@@ -238,8 +238,9 @@ public class LFLDA
         HashMap<String, Integer> result = new HashMap<>();
         String[] split = line.split(" ");
         for (String alphabetEntry : split) {
-            String[] innerSplit = alphabetEntry.split("-");
+            String[] innerSplit = alphabetEntry.split("#");
             result.put(innerSplit[0], Integer.parseInt(innerSplit[1]));
+
         }
         return result;
     }
