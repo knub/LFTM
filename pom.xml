@@ -61,10 +61,10 @@
                             <id>lftm</id>
                             <mainClass>lftm.ProxyMain</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xms35g</jvmArg>
-                                <jvmArg>-Xmx35g</jvmArg>
+                                <jvmArg>-Xms25g</jvmArg>
+                                <jvmArg>-Xmx25g</jvmArg>
                                 <jvmArg>-XX:ParallelGCThreads=8</jvmArg>
-                                <jvmArg>-XX:+PrintGC</jvmArg>
+                                <!-- <jvmArg>-XX:+PrintGC</jvmArg> -->
                             </jvmArgs>
                         </launcher>
                     </launchers>
@@ -84,21 +84,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.codehaus.mojo</groupId>-->
-                <!--<artifactId>exec-maven-plugin</artifactId>-->
-                <!--<version>1.5.0</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>exec</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<configuration>-->
-                    <!--<mainClass>lftm.LFTM</mainClass>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 </project>
