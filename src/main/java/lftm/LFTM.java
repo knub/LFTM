@@ -2,17 +2,23 @@ package lftm;
 
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
 import lftm.models.LFDMM;
-import lftm.models.LFLDA;
+//import lftm.models.LFLDA;
 
+import lftm.utility.MTRandom;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import lftm.utility.CmdArgs;
 import lftm.eval.ClusteringEval;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implementations of the LF-LDA and LF-DMM latent feature topic models, using collapsed Gibbs
@@ -37,11 +43,11 @@ public class LFTM
 
             switch (cmdArgs.model) {
                 case "LFLDA":
-                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
-                            cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
-                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName, cmdArgs.savestep);
-                    lflda.inference();
-                    break;
+//                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
+//                            cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
+//                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName, cmdArgs.savestep);
+//                    lflda.inference();
+//                    break;
 //                case "LFDMM":
 //                    LFDMM lfdmm = new LFDMM(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.ntopics,
 //                            cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
@@ -52,6 +58,9 @@ public class LFTM
 //                case "Eval":
 //                    ClusteringEval.evaluate(cmdArgs.labelFile, cmdArgs.dir, cmdArgs.prob);
 //                    break;
+                case "preprocess-LFLDA":
+                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vocabulary);
+                    break;
                 default:
                     System.out
                             .println("Error: Option \"-model\" must get \"LFLDA\" or \"LFDMM\" or \"Eval\"");
@@ -69,6 +78,62 @@ public class LFTM
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static Set<String> getVectorWords(String pathToVectorWords) throws Exception {
+        Set<String> vectorWords = new HashSet<>();
+        BufferedReader br = new BufferedReader(new FileReader(pathToVectorWords));
+        for (String word; (word = br.readLine()) != null;) {
+            vectorWords.add(word);
+        }
+        return vectorWords;
+    }
+
+    private static void preprocessLFLDA(String pathToTopicModel, String pathToVectorWords) throws Exception {
+        ParallelTopicModel tm = ParallelTopicModel.read(new File(pathToTopicModel));
+        HashMap<String, Integer> word2IdVocabulary = new HashMap<>();
+        int lastWordId = -1;
+        Set<String> vectorWords = getVectorWords(pathToVectorWords);
+
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda"))));
+
+        // for all documents
+        Alphabet wordAlphabet = tm.getAlphabet();
+        ArrayList<TopicAssignment> data = tm.getData();
+        for (TopicAssignment doc : data) {
+            int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
+            int[] topicFeatures = doc.topicSequence.getFeatures();
+            assert wordFeatures.length == topicFeatures.length :
+                    "Document length does not match " + wordFeatures.length + " - " + topicFeatures.length;
+            if (wordFeatures.length == 0) {
+                System.out.println("Skipping document");
+                continue;
+            }
+
+            // for all words
+            for (int i = 0; i < wordFeatures.length; i += 1) {
+                int featureId = wordFeatures[i];
+                int topicId = topicFeatures[i];
+                String word = (String) wordAlphabet.lookupObject(featureId);
+                if (vectorWords.contains(word)) {
+                    int wordId;
+                    if (word2IdVocabulary.containsKey(word)) {
+                        wordId = word2IdVocabulary.get(word);
+                    } else {
+                        wordId = lastWordId + 1;
+                        word2IdVocabulary.put(word, wordId);
+                        lastWordId = wordId;
+                    }
+                    if (i == 0) {
+                        pw.print(wordId + "-" + topicId);
+                    } else {
+                        pw.print(" " + wordId + "-" + topicId);
+                    }
+                }
+            }
+            pw.println();
+        }
+        pw.close();
     }
 
     public static void help(CmdLineParser parser)

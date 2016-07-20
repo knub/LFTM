@@ -18,17 +18,18 @@ import cc.mallet.optimize.InvalidOptimizableException;
 import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.MatrixOps;
 
-/**
- * Implementation of the LF-LDA latent feature topic model, using collapsed Gibbs sampling, as
- * described in:
- * 
- * Dat Quoc Nguyen, Richard Billingsley, Lan Du and Mark Johnson. 2015. Improving Topic Models with
- * Latent Feature Word Representations. Transactions of the Association for Computational
- * Linguistics, vol. 3, pp. 299-313.
- * 
- * @author Dat Quoc Nguyen
- */
+///**
+// * Implementation of the LF-LDA latent feature topic model, using collapsed Gibbs sampling, as
+// * described in:
+// *
+// * Dat Quoc Nguyen, Richard Billingsley, Lan Du and Mark Johnson. 2015. Improving Topic Models with
+// * Latent Feature Word Representations. Transactions of the Association for Computational
+// * Linguistics, vol. 3, pp. 299-313.
+// *
+// * @author Dat Quoc Nguyen
+// */
 
+/*
 @SuppressWarnings("ALL")
 public class LFLDA
 {
@@ -134,14 +135,14 @@ public class LFLDA
         folderPath = topicModelPath.substring(0,
                 Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
 
-        System.out.println("Starting with " + FreeMemory.get(true, 5) + " MB");
-        System.out.println("Loading topic model " + pathToTopicModel);
-        ParallelTopicModel tm = ParallelTopicModel.read(
-                new File(pathToTopicModel));
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
+        System.out.println("Starting with " + FreeMemory.get(true, 15) + " MB");
+//        ParallelTopicModel tm = loadTopicModelInfo(pathToTopicModel);
+
+        System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
+
+        System.exit(1);
 
         System.out.println("Reading vector words: " + pathToVectorWords);
-        Set<String> vectorWords = getVectorWords(pathToVectorWords);
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
 
         System.out.println("Reading topic modeling corpus from topic model");
@@ -214,7 +215,7 @@ public class LFLDA
                         lastWordId = wordId;
                     }
 
-                    /** Topic initialization **/
+                    // Topic initialization
                     int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
                     int subtopic = topicFeatures[i] + topicOffset;
                     int topic = subtopic % numTopics;
@@ -238,8 +239,6 @@ public class LFLDA
             docId += 1;
         }
 
-        // Free memory for topic model
-        tm = null;
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
         System.out.println("Reading vectors: " + vectorFilePath);
         readWordVectorsFile(vectorFilePath);
@@ -250,6 +249,18 @@ public class LFLDA
         expDotProductValues = new double[numTopics][vocabularySize];
         sumExpValues = new double[numTopics];
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
+    }
+
+    private ParallelTopicModel loadTopicModelInfo(String pathToTopicModel) throws Exception {
+        System.out.println("Loading topic model info " + pathToTopicModel);
+        ParallelTopicModel tm = ParallelTopicModel.read(
+                new File(pathToTopicModel));
+        System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
+
+        Alphabet alp = tm.getAlphabet();
+        numDocuments = tm.getData().size();
+        vocabularySize = determineVocabularySize(tm, vectorWords);
+        return (alp, numDocuments, vocabularySize);
     }
 
     private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) throws Exception {
@@ -263,15 +274,6 @@ public class LFLDA
         }
         it = tm.getAlphabet().iterator();
         return size;
-    }
-
-    private Set<String> getVectorWords(String pathToVectorWords) throws IOException {
-        Set<String> vectorWords = new HashSet<>();
-        BufferedReader br = new BufferedReader(new FileReader(pathToVectorWords));
-        for (String word; (word = br.readLine()) != null;) {
-            vectorWords.add(word);
-        }
-        return vectorWords;
     }
 
     public void readWordVectorsFile(String pathToWordVectorsFile)
@@ -602,3 +604,4 @@ public class LFLDA
         writeTopicWordPros();
     }
 }
+*/
