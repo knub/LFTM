@@ -4,6 +4,7 @@ import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureVectorSequence;
 import lftm.models.LFDMM;
 
 import lftm.models.LFLDA;
@@ -15,6 +16,7 @@ import lftm.utility.CmdArgs;
 import lftm.eval.ClusteringEval;
 
 import java.io.*;
+import java.text.BreakIterator;
 import java.util.*;
 
 /**
@@ -28,6 +30,8 @@ import java.util.*;
  * @author Dat Quoc Nguyen
  * 
  */
+
+
 @SuppressWarnings("WeakerAccess")
 public class Main
 {
@@ -108,7 +112,6 @@ public class Main
                 continue;
             }
 
-            boolean first = true;
             // for all words
             for (int i = 0; i < wordFeatures.length; i += 1) {
                 int featureId = wordFeatures[i];
@@ -123,15 +126,10 @@ public class Main
                         word2IdVocabulary.put(word, wordId);
                         lastWordId = wordId;
                     }
-                    if (first) {
-                        pwDocuments.write(wordId + "#" + topicId);
-                        first = false;
-                    } else {
-                        pwDocuments.write(" " + wordId + "#" + topicId);
-                    }
+                    pwDocuments.println(String.format("%06d#%06d", wordId, topicId));
                 }
             }
-            pwDocuments.println();
+            pwDocuments.println("##");
         }
 
         boolean first = true;

@@ -177,46 +177,45 @@ public class LFLDA
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
         int lineNr = 0;
+        List<Integer> document = new ArrayList<Integer>();
+        List<Integer> topics = new ArrayList<Integer>();
         for (String line; (line = brDocument.readLine()) != null;) {
-            if (line.equals(""))
-                continue;
-            List<Integer> document = new ArrayList<Integer>();
-            List<Integer> topics = new ArrayList<Integer>();
-            String[] tokens = line.split(" ");
-            for (String token : tokens) {
-                try {
-                    String[] wordAndTopic = token.split("#");
-                    int wordId = Integer.parseInt(wordAndTopic[0]);
-                    int topicId = Integer.parseInt(wordAndTopic[1]);
-
-                    // Topic initialization
-                    int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
-                    int subtopic = topicId + topicOffset;
-                    int topic = subtopic % numTopics;
-                    if (topic == subtopic) { // Generated from the latent feature component
-                        topicWordCountLF[topic][wordId] += 1;
-                        sumTopicWordCountLF[topic] += 1;
-                    } else {// Generated from the Dirichlet multinomial component
-                        topicWordCountLDA[topic][wordId] += 1;
-                        sumTopicWordCountLDA[topic] += 1;
-                    }
-                    docTopicCount[docId][topic] += 1;
-                    sumDocTopicCount[docId] += 1;
-
-                    document.add(wordId);
-                    topics.add(subtopic);
-                } catch (Exception e) {
-                    System.out.println(line);
-                    System.out.println("lineNr = " + lineNr);
-                    System.out.println("token = <" + token + ">");
-                    System.out.println("line = <" + line + ">");
-                    throw e;
+            if (line.equals("##") && document.size() > 0) {
+                corpus.add(document);
+                topicAssignments.add(topics);
+                document = new ArrayList<Integer>();
+                topics = new ArrayList<Integer>();
+                docId += 1;
+                if (docId % 100000 == 0) {
+                    System.out.println(docId);
                 }
             }
+            try {
+                int wordId = Integer.parseInt(line.substring(0, 6));
+                int topicId = Integer.parseInt(line.substring(7, 13));
 
-            corpus.add(document);
-            topicAssignments.add(topics);
-            docId += 1;
+                // Topic initialization
+                int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
+                int subtopic = topicId + topicOffset;
+                int topic = subtopic % numTopics;
+                if (topic == subtopic) { // Generated from the latent feature component
+                    topicWordCountLF[topic][wordId] += 1;
+                    sumTopicWordCountLF[topic] += 1;
+                } else {// Generated from the Dirichlet multinomial component
+                    topicWordCountLDA[topic][wordId] += 1;
+                    sumTopicWordCountLDA[topic] += 1;
+                }
+                docTopicCount[docId][topic] += 1;
+                sumDocTopicCount[docId] += 1;
+
+                document.add(wordId);
+                topics.add(subtopic);
+            } catch (Exception e) {
+                System.out.println(line);
+                System.out.println("lineNr = " + lineNr);
+                System.out.println("line = <" + line + ">");
+                throw e;
+            }
             lineNr += 1;
         }
 
