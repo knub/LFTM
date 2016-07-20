@@ -128,10 +128,10 @@ public class LFLDA
         folderPath = topicModelPath.substring(0,
                 Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
 
-        System.out.println("Starting with " + FreeMemory.get(true, 15) + " MB");
+        System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, pathToVectorWords);
 
-        System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
 
         System.out.println("Reading vector words: " + pathToVectorWords);
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
