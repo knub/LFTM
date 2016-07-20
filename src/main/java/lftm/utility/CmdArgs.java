@@ -17,28 +17,28 @@ public class CmdArgs
     @Option(name = "-vocabulary", usage = "Specify vocabulary to use", required = true)
     public String vocabulary = "";
 
-    @Option(name = "-ntopics", usage = "Specify number of topics", required = true)
-    public int ntopics = 20;
+    @Option(name = "-ntopics", usage = "Specify number of topics")
+    public int ntopics = 256;
 
-    @Option(name = "-alpha", usage = "Specify alpha", required = true)
-    public double alpha = 0.1;
+    @Option(name = "-alpha", usage = "Specify alpha")
+    public double alpha = 0.01;
 
-    @Option(name = "-beta", usage = "Specify beta", required = true)
+    @Option(name = "-beta", usage = "Specify beta")
     public double beta = 0.01;
 
-    @Option(name = "-lambda", usage = "Specify mixture weight lambda", required = true)
+    @Option(name = "-lambda", usage = "Specify mixture weight lambda")
     public double lambda = 0.6;
 
-    @Option(name = "-initers", usage = "Specify number of initial sampling iterations", required = true)
-    public int initers = 2000;
+    @Option(name = "-initers", usage = "Specify number of initial sampling iterations")
+    public int initers = 0;
 
-    @Option(name = "-niters", usage = "Specify number of EM-style sampling iterations", required = true)
+    @Option(name = "-niters", usage = "Specify number of EM-style sampling iterations")
     public int niters = 200;
 
-    @Option(name = "-twords", usage = "Specify number of top topical words", required = true)
-    public int twords = 20;
+    @Option(name = "-twords", usage = "Specify number of top topical words")
+    public int twords = 10;
 
-    @Option(name = "-name", usage = "Specify a name to a topic modeling experiment", required = true)
+    @Option(name = "-name", usage = "Specify a name to a topic modeling experiment")
     public String expModelName = "model";
 
 //    @Option(name = "-dir")
@@ -50,7 +50,7 @@ public class CmdArgs
 //    @Option(name = "-prob")
 //    public String prob = "";
 
-    @Option(name = "-sstep", required = true)
-    public int savestep = 0;
+    @Option(name = "-sstep")
+    public int savestep = 10;
 
 }
