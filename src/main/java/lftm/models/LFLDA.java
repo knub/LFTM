@@ -144,8 +144,6 @@ public class LFLDA
         System.out.println("Reading topic modeling corpus from topic model");
 
         numDocuments = tm.numDocuments;
-        word2IdVocabulary = new HashMap<String, Integer>();
-        id2WordVocabulary = new HashMap<Integer, String>();
         corpus = new ArrayList<List<Integer>>(numDocuments);
         topicAssignments = new ArrayList<List<Integer>>(numDocuments);
         vocabularySize = tm.vocabularySize;
@@ -182,6 +180,7 @@ public class LFLDA
         Alphabet wordAlphabet = tm.wordAlphabet;
         BufferedReader br = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
         word2IdVocabulary = readWord2IdVocabulary(br.readLine());
+        id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         for (String line; (line = br.readLine()) != null;) {
             List<Integer> document = new ArrayList<Integer>();
             List<Integer> topics = new ArrayList<Integer>();
@@ -190,11 +189,6 @@ public class LFLDA
                 String[] wordAndTopic = token.split("-");
                 int wordId = Integer.parseInt(wordAndTopic[0]);
                 int topicId = Integer.parseInt(wordAndTopic[1]);
-                if (!id2WordVocabulary.containsKey(wordId)) {
-                    String word = (String) wordAlphabet.lookupObject(wordId);
-                    word2IdVocabulary.put(word, wordId);
-                    id2WordVocabulary.put(wordId, word);
-                }
 
                 // Topic initialization
                 int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
@@ -229,6 +223,14 @@ public class LFLDA
         expDotProductValues = new double[numTopics][vocabularySize];
         sumExpValues = new double[numTopics];
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
+    }
+
+    private HashMap<Integer, String> buildId2WordVocabulary(HashMap<String, Integer> word2IdVocabulary) {
+        HashMap<Integer, String> result = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : word2IdVocabulary.entrySet()) {
+            result.put(entry.getValue(), entry.getKey());
+        }
+        return result;
     }
 
     private HashMap<String,Integer> readWord2IdVocabulary(String line) {

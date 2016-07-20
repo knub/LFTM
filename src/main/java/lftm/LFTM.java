@@ -92,7 +92,8 @@ public class LFTM
         int lastWordId = -1;
         Set<String> vectorWords = getVectorWords(pathToVectorWords);
 
-        StringBuilder sbDocuments = new StringBuilder();
+        PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda"))));
+        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda-alphabet"))));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
@@ -122,31 +123,26 @@ public class LFTM
                         lastWordId = wordId;
                     }
                     if (i == 0) {
-                        sbDocuments.append(wordId).append("-").append(topicId);
+                        pwDocuments.write(wordId + "-" + topicId);
                     } else {
-                        sbDocuments.append(" ").append(wordId).append("-").append(topicId);
+                        pwDocuments.write(" " + wordId + "-" + topicId);
                     }
                 }
             }
-            sbDocuments.append("\n");
+            pwDocuments.println();
         }
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda")));
 
-        StringBuilder sbAlphabet = new StringBuilder();
         boolean first = true;
         for (Map.Entry<String, Integer> entry : word2IdVocabulary.entrySet()) {
             if (first) {
-                sbAlphabet.append(entry.getKey()).append("-").append(entry.getValue());
+                pwAlphabet.write(entry.getKey() + "-" + entry.getValue());
                 first = false;
             } else {
-                sbAlphabet.append(" ").append(entry.getKey()).append("-").append(entry.getValue());
+                pwAlphabet.write(" " + entry.getKey() + "-" + entry.getValue());
             }
         }
-
-        bw.write(sbAlphabet.toString());
-        bw.write("\n");
-        bw.write(sbDocuments.toString());
-        bw.close();
+        pwDocuments.close();
+        pwAlphabet.close();
     }
 
     public static void help(CmdLineParser parser)
