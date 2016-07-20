@@ -180,15 +180,18 @@ public class LFLDA
         List<Integer> document = new ArrayList<Integer>();
         List<Integer> topics = new ArrayList<Integer>();
         for (String line; (line = brDocument.readLine()) != null;) {
-            if (line.equals("##") && document.size() > 0) {
-                corpus.add(document);
-                topicAssignments.add(topics);
-                document = new ArrayList<Integer>();
-                topics = new ArrayList<Integer>();
-                docId += 1;
-                if (docId % 100000 == 0) {
-                    System.out.println(docId);
+            if (line.equals("##")) {
+                if (document.size() > 0) {
+                    corpus.add(document);
+                    topicAssignments.add(topics);
+                    document = new ArrayList<Integer>();
+                    topics = new ArrayList<Integer>();
+                    docId += 1;
+                    if (docId % 100000 == 0) {
+                        System.out.println(docId);
+                    }
                 }
+                continue;
             }
             try {
                 int wordId = Integer.parseInt(line.substring(0, 6));
