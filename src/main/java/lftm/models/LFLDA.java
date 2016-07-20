@@ -8,6 +8,7 @@ import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
+import lftm.utility.FreeMemory;
 import lftm.utility.FuncUtils;
 import lftm.utility.LBFGS;
 import lftm.utility.MTRandom;
@@ -116,20 +117,24 @@ public class LFLDA
         folderPath = topicModelPath.substring(0,
                 Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
 
+        System.out.println("Starting with " + FreeMemory.get(true, 5) + " MB");
         System.out.println("Loading topic model " + pathToTopicModel);
         ParallelTopicModel tm = ParallelTopicModel.read(
                 new File(pathToTopicModel));
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
 
         System.out.println("Reading vector words: " + pathToVectorWords);
         Set<String> vectorWords = getVectorWords(pathToVectorWords);
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
 
         System.out.println("Reading topic modeling corpus from topic model");
 
-        word2IdVocabulary = new HashMap<String, Integer>();
-        id2WordVocabulary = new HashMap<Integer, String>();
-        corpus = new ArrayList<List<Integer>>();
         numDocuments = tm.getData().size();
         numWordsInCorpus = 0;
+        word2IdVocabulary = new HashMap<String, Integer>();
+        id2WordVocabulary = new HashMap<Integer, String>();
+        corpus = new ArrayList<List<Integer>>(numDocuments);
+        topicAssignments = new ArrayList<List<Integer>>(numDocuments);
         vocabularySize = determineVocabularySize(tm, vectorWords);
 
         docTopicCount = new int[numDocuments][numTopics];
@@ -147,7 +152,6 @@ public class LFLDA
         alphaSum = numTopics * alpha;
         betaSum = vocabularySize * beta;
 
-
         System.out.println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
         System.out.println("Vocabulary size: " + vocabularySize);
         System.out.println("Number of topics: " + numTopics);
@@ -158,15 +162,18 @@ public class LFLDA
         System.out.println("Number of EM-style sampling iterations for the LF-LDA model: " + numIterations);
         System.out.println("Number of top topical words: " + topWords);
 
-        topicAssignments = new ArrayList<List<Integer>>();
+
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
         int lastWordId = -1;
         int docId = 0;
         // for all documents
         for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext(); ) {
             TopicAssignment doc = it.next();
             FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
+
             Alphabet docAlphabet = docFeatures.getAlphabet();
             int[] features = docFeatures.getFeatures();
+
             int[] topicFeatures = doc.topicSequence.getFeatures();
 
             int docLength = doc.topicSequence.size();
@@ -217,11 +224,17 @@ public class LFLDA
             docId += 1;
         }
 
+        tm = null;
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
+        System.out.println("Reading vectors: " + vectorFilePath);
         readWordVectorsFile(vectorFilePath);
+        System.out.println("Initializing embedding datastructures");
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
         topicVectors = new double[numTopics][vectorSize];
         dotProductValues = new double[numTopics][vocabularySize];
         expDotProductValues = new double[numTopics][vocabularySize];
         sumExpValues = new double[numTopics];
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
     }
 
     private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) throws Exception {
