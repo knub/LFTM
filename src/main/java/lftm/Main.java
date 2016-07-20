@@ -29,7 +29,7 @@ import java.util.*;
  * 
  */
 @SuppressWarnings("WeakerAccess")
-public class LFTM
+public class Main
 {
     public static void main(String[] args) throws Exception {
         CmdArgs cmdArgs = new CmdArgs();
@@ -149,7 +149,7 @@ public class LFTM
 
     public static void help(CmdLineParser parser)
     {
-        System.out.println("java -jar lftm.LFTM.jar [options ...] [arguments...]");
+        System.out.println("java -jar lftm.Main.jar [options ...] [arguments...]");
         parser.printUsage(System.out);
     }
 }
