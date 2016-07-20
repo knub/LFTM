@@ -1,22 +1,16 @@
 package lftm.models;
 
+import cc.mallet.optimize.InvalidOptimizableException;
+import cc.mallet.optimize.Optimizer;
+import cc.mallet.topics.ParallelTopicModel;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AlphabetCarrying;
+import cc.mallet.types.MatrixOps;
+import lftm.utility.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import cc.mallet.topics.ParallelTopicModel;
-import cc.mallet.topics.TopicAssignment;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.AlphabetCarrying;
-import cc.mallet.types.FeatureSequence;
-import lftm.utility.FreeMemory;
-import lftm.utility.FuncUtils;
-import lftm.utility.LBFGS;
-import lftm.utility.MTRandom;
-import lftm.utility.Parallel;
-import cc.mallet.optimize.InvalidOptimizableException;
-import cc.mallet.optimize.Optimizer;
-import cc.mallet.types.MatrixOps;
 
 ///**
 // * Implementation of the LF-LDA latent feature topic model, using collapsed Gibbs sampling, as
@@ -182,36 +176,48 @@ public class LFLDA
         word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        int lineNr = 0;
         for (String line; (line = brDocument.readLine()) != null;) {
+            if (line.equals(""))
+                continue;
             List<Integer> document = new ArrayList<Integer>();
             List<Integer> topics = new ArrayList<Integer>();
             String[] tokens = line.split(" ");
             for (String token : tokens) {
-                String[] wordAndTopic = token.split("#");
-                int wordId = Integer.parseInt(wordAndTopic[0]);
-                int topicId = Integer.parseInt(wordAndTopic[1]);
+                try {
+                    String[] wordAndTopic = token.split("#");
+                    int wordId = Integer.parseInt(wordAndTopic[0]);
+                    int topicId = Integer.parseInt(wordAndTopic[1]);
 
-                // Topic initialization
-                int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
-                int subtopic = topicId + topicOffset;
-                int topic = subtopic % numTopics;
-                if (topic == subtopic) { // Generated from the latent feature component
-                    topicWordCountLF[topic][wordId] += 1;
-                    sumTopicWordCountLF[topic] += 1;
-                } else {// Generated from the Dirichlet multinomial component
-                    topicWordCountLDA[topic][wordId] += 1;
-                    sumTopicWordCountLDA[topic] += 1;
+                    // Topic initialization
+                    int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
+                    int subtopic = topicId + topicOffset;
+                    int topic = subtopic % numTopics;
+                    if (topic == subtopic) { // Generated from the latent feature component
+                        topicWordCountLF[topic][wordId] += 1;
+                        sumTopicWordCountLF[topic] += 1;
+                    } else {// Generated from the Dirichlet multinomial component
+                        topicWordCountLDA[topic][wordId] += 1;
+                        sumTopicWordCountLDA[topic] += 1;
+                    }
+                    docTopicCount[docId][topic] += 1;
+                    sumDocTopicCount[docId] += 1;
+
+                    document.add(wordId);
+                    topics.add(subtopic);
+                } catch (Exception e) {
+                    System.out.println(line);
+                    System.out.println("lineNr = " + lineNr);
+                    System.out.println("token = <" + token + ">");
+                    System.out.println("line = <" + line + ">");
+                    throw e;
                 }
-                docTopicCount[docId][topic] += 1;
-                sumDocTopicCount[docId] += 1;
-
-                document.add(wordId);
-                topics.add(subtopic);
             }
 
             corpus.add(document);
             topicAssignments.add(topics);
             docId += 1;
+            lineNr += 1;
         }
 
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");

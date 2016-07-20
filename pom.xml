@@ -55,9 +55,10 @@
                             <id>lftm</id>
                             <mainClass>lftm.ProxyMain</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xms40g</jvmArg>
-                                <jvmArg>-Xmx40g</jvmArg>
+                                <jvmArg>-Xms35g</jvmArg>
+                                <jvmArg>-Xmx35g</jvmArg>
                                 <jvmArg>-XX:ParallelGCThreads=8</jvmArg>
+                                <jvmArg>-XX:+PrintGC</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>
