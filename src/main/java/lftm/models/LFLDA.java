@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.Alphabet;
+import cc.mallet.types.AlphabetCarrying;
 import cc.mallet.types.FeatureSequence;
 import lftm.utility.FreeMemory;
 import lftm.utility.FuncUtils;
@@ -98,6 +99,22 @@ public class LFLDA
     public String tAssignsFilePath = "";
     public int savestep = 0;
 
+    public static boolean alphabetsMatch (AlphabetCarrying object1, AlphabetCarrying object2) {
+        Alphabet a1 = object1.getAlphabet();
+        Alphabet a2 = object2.getAlphabet();
+        if (a1 == null || a2 == null) {
+            System.out.println("One is null, the other isn't");
+            return false;  // One is null, but the other isn't
+        }
+        if (!a1.equals(a2)) {
+            System.out.println("Does not equal");
+//                System.out.println(a1[i]);
+//                System.out.println(a2[i]);
+            return false;
+        }
+        return true;
+    }
+
     public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
                  int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
@@ -167,26 +184,23 @@ public class LFLDA
         int lastWordId = -1;
         int docId = 0;
         // for all documents
-        for (Iterator<TopicAssignment> it = tm.getData().iterator(); it.hasNext(); ) {
-            TopicAssignment doc = it.next();
-            FeatureSequence docFeatures = (FeatureSequence) doc.instance.getData();
-
-            Alphabet docAlphabet = docFeatures.getAlphabet();
-            int[] features = docFeatures.getFeatures();
-
+        Alphabet wordAlphabet = tm.getAlphabet();
+        ArrayList<TopicAssignment> data = tm.getData();
+        for (int j = 0; j < data.size(); j += 1) {
+            TopicAssignment doc = data.get(j);
+            int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
-
-            int docLength = doc.topicSequence.size();
-            assert docLength == features.length : "Document length does not match " + features.length + " - " + docLength;
-            if (docLength == 0)
+            assert wordFeatures.length == topicFeatures.length :
+                    "Document length does not match " + wordFeatures.length + " - " + topicFeatures.length;
+            if (wordFeatures.length == 0)
                 continue;
 
             List<Integer> document = new ArrayList<Integer>();
             List<Integer> topics = new ArrayList<Integer>();
             // for all words
-            for (int i = 0; i < docLength; i += 1) {
-                int originalWordId = features[i];
-                String word = (String) docAlphabet.lookupObject(originalWordId);
+            for (int i = 0; i < wordFeatures.length; i += 1) {
+                int featureId = wordFeatures[i];
+                String word = (String) wordAlphabet.lookupObject(featureId);
                 if (vectorWords.contains(word)) {
                     int wordId = -1;
                     if (word2IdVocabulary.containsKey(word)) {
@@ -224,6 +238,7 @@ public class LFLDA
             docId += 1;
         }
 
+        // Free memory for topic model
         tm = null;
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
         System.out.println("Reading vectors: " + vectorFilePath);
