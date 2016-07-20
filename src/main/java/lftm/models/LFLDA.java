@@ -178,7 +178,7 @@ public class LFLDA
         int docId = 0;
         // for all documents
         Alphabet wordAlphabet = tm.wordAlphabet;
-        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda-alphabet"));
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda.alphabet"));
         word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));

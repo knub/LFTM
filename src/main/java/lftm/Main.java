@@ -93,7 +93,7 @@ public class Main
         Set<String> vectorWords = getVectorWords(pathToVectorWords);
 
         PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda"))));
-        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda-alphabet"))));
+        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda.alphabet"))));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
