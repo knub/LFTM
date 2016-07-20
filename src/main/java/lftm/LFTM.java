@@ -5,8 +5,8 @@ import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import lftm.models.LFDMM;
-//import lftm.models.LFLDA;
 
+import lftm.models.LFLDA;
 import lftm.utility.MTRandom;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -15,10 +15,7 @@ import lftm.utility.CmdArgs;
 import lftm.eval.ClusteringEval;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementations of the LF-LDA and LF-DMM latent feature topic models, using collapsed Gibbs
@@ -43,11 +40,11 @@ public class LFTM
 
             switch (cmdArgs.model) {
                 case "LFLDA":
-//                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
-//                            cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
-//                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName, cmdArgs.savestep);
-//                    lflda.inference();
-//                    break;
+                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
+                            cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
+                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName, cmdArgs.savestep);
+                    lflda.inference();
+                    break;
 //                case "LFDMM":
 //                    LFDMM lfdmm = new LFDMM(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.ntopics,
 //                            cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
@@ -95,7 +92,7 @@ public class LFTM
         int lastWordId = -1;
         Set<String> vectorWords = getVectorWords(pathToVectorWords);
 
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda"))));
+        StringBuilder sbDocuments = new StringBuilder();
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
@@ -125,15 +122,31 @@ public class LFTM
                         lastWordId = wordId;
                     }
                     if (i == 0) {
-                        pw.print(wordId + "-" + topicId);
+                        sbDocuments.append(wordId).append("-").append(topicId);
                     } else {
-                        pw.print(" " + wordId + "-" + topicId);
+                        sbDocuments.append(" ").append(wordId).append("-").append(topicId);
                     }
                 }
             }
-            pw.println();
+            sbDocuments.append("\n");
         }
-        pw.close();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda")));
+
+        StringBuilder sbAlphabet = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, Integer> entry : word2IdVocabulary.entrySet()) {
+            if (first) {
+                sbAlphabet.append(entry.getKey()).append("-").append(entry.getValue());
+                first = false;
+            } else {
+                sbAlphabet.append(" ").append(entry.getKey()).append("-").append(entry.getValue());
+            }
+        }
+
+        bw.write(sbAlphabet.toString());
+        bw.write("\n");
+        bw.write(sbDocuments.toString());
+        bw.close();
     }
 
     public static void help(CmdLineParser parser)

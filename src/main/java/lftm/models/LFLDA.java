@@ -29,7 +29,6 @@ import cc.mallet.types.MatrixOps;
 // * @author Dat Quoc Nguyen
 // */
 
-/*
 @SuppressWarnings("ALL")
 public class LFLDA
 {
@@ -49,7 +48,6 @@ public class LFLDA
     public List<List<Integer>> topicAssignments; // Topics assignments for words
                                                  // in the corpus
     public int numDocuments; // Number of documents in the corpus
-    public int numWordsInCorpus; // Number of words in the corpus
 
     public HashMap<String, Integer> word2IdVocabulary; // Vocabulary to get ID
                                                        // given a word
@@ -136,24 +134,21 @@ public class LFLDA
                 Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
 
         System.out.println("Starting with " + FreeMemory.get(true, 15) + " MB");
-//        ParallelTopicModel tm = loadTopicModelInfo(pathToTopicModel);
+        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, pathToVectorWords);
 
         System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
-
-        System.exit(1);
 
         System.out.println("Reading vector words: " + pathToVectorWords);
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
 
         System.out.println("Reading topic modeling corpus from topic model");
 
-        numDocuments = tm.getData().size();
-        numWordsInCorpus = 0;
+        numDocuments = tm.numDocuments;
         word2IdVocabulary = new HashMap<String, Integer>();
         id2WordVocabulary = new HashMap<Integer, String>();
         corpus = new ArrayList<List<Integer>>(numDocuments);
         topicAssignments = new ArrayList<List<Integer>>(numDocuments);
-        vocabularySize = determineVocabularySize(tm, vectorWords);
+        vocabularySize = tm.vocabularySize;
 
         docTopicCount = new int[numDocuments][numTopics];
         sumDocTopicCount = new int[numDocuments];
@@ -170,7 +165,7 @@ public class LFLDA
         alphaSum = numTopics * alpha;
         betaSum = vocabularySize * beta;
 
-        System.out.println("Corpus size: " + numDocuments + " docs, " + numWordsInCorpus + " words");
+        System.out.println("Corpus size: " + numDocuments + " docs");
         System.out.println("Vocabulary size: " + vocabularySize);
         System.out.println("Number of topics: " + numTopics);
         System.out.println("alpha: " + alpha);
@@ -182,58 +177,43 @@ public class LFLDA
 
 
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
-        int lastWordId = -1;
         int docId = 0;
         // for all documents
-        Alphabet wordAlphabet = tm.getAlphabet();
-        ArrayList<TopicAssignment> data = tm.getData();
-        for (int j = 0; j < data.size(); j += 1) {
-            TopicAssignment doc = data.get(j);
-            int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
-            int[] topicFeatures = doc.topicSequence.getFeatures();
-            assert wordFeatures.length == topicFeatures.length :
-                    "Document length does not match " + wordFeatures.length + " - " + topicFeatures.length;
-            if (wordFeatures.length == 0)
-                continue;
-
+        Alphabet wordAlphabet = tm.wordAlphabet;
+        BufferedReader br = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        word2IdVocabulary = readWord2IdVocabulary(br.readLine());
+        for (String line; (line = br.readLine()) != null;) {
             List<Integer> document = new ArrayList<Integer>();
             List<Integer> topics = new ArrayList<Integer>();
-            // for all words
-            for (int i = 0; i < wordFeatures.length; i += 1) {
-                int featureId = wordFeatures[i];
-                String word = (String) wordAlphabet.lookupObject(featureId);
-                if (vectorWords.contains(word)) {
-                    int wordId = -1;
-                    if (word2IdVocabulary.containsKey(word)) {
-                        wordId = word2IdVocabulary.get(word);
-                        document.add(wordId);
-                    } else {
-                        wordId = lastWordId + 1;
-                        word2IdVocabulary.put(word, wordId);
-                        id2WordVocabulary.put(wordId, word);
-                        document.add(wordId);
-                        lastWordId = wordId;
-                    }
-
-                    // Topic initialization
-                    int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
-                    int subtopic = topicFeatures[i] + topicOffset;
-                    int topic = subtopic % numTopics;
-                    if (topic == subtopic) { // Generated from the latent feature component
-                        topicWordCountLF[topic][wordId] += 1;
-                        sumTopicWordCountLF[topic] += 1;
-                    } else {// Generated from the Dirichlet multinomial component
-                        topicWordCountLDA[topic][wordId] += 1;
-                        sumTopicWordCountLDA[topic] += 1;
-                    }
-                    docTopicCount[docId][topic] += 1;
-                    sumDocTopicCount[docId] += 1;
-
-                    topics.add(subtopic);
+            String[] tokens = line.split(" ");
+            for (String token : tokens) {
+                String[] wordAndTopic = token.split("-");
+                int wordId = Integer.parseInt(wordAndTopic[0]);
+                int topicId = Integer.parseInt(wordAndTopic[1]);
+                if (!id2WordVocabulary.containsKey(wordId)) {
+                    String word = (String) wordAlphabet.lookupObject(wordId);
+                    word2IdVocabulary.put(word, wordId);
+                    id2WordVocabulary.put(wordId, word);
                 }
+
+                // Topic initialization
+                int topicOffset = MTRandom.nextDouble() < lambda ? 0 : numTopics;
+                int subtopic = topicId + topicOffset;
+                int topic = subtopic % numTopics;
+                if (topic == subtopic) { // Generated from the latent feature component
+                    topicWordCountLF[topic][wordId] += 1;
+                    sumTopicWordCountLF[topic] += 1;
+                } else {// Generated from the Dirichlet multinomial component
+                    topicWordCountLDA[topic][wordId] += 1;
+                    sumTopicWordCountLDA[topic] += 1;
+                }
+                docTopicCount[docId][topic] += 1;
+                sumDocTopicCount[docId] += 1;
+
+                document.add(wordId);
+                topics.add(subtopic);
             }
 
-            numWordsInCorpus += document.size();
             corpus.add(document);
             topicAssignments.add(topics);
             docId += 1;
@@ -251,7 +231,28 @@ public class LFLDA
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
     }
 
-    private ParallelTopicModel loadTopicModelInfo(String pathToTopicModel) throws Exception {
+    private HashMap<String,Integer> readWord2IdVocabulary(String line) {
+        HashMap<String, Integer> result = new HashMap<>();
+        String[] split = line.split(" ");
+        for (String alphabetEntry : split) {
+            String[] innerSplit = alphabetEntry.split("-");
+            result.put(innerSplit[0], Integer.parseInt(innerSplit[1]));
+        }
+        return result;
+    }
+
+    class TopicModelInfo {
+        public TopicModelInfo(Alphabet wordAlphabet, int numDocuments, int vocabularySize) {
+            this.wordAlphabet = wordAlphabet;
+            this.numDocuments = numDocuments;
+            this.vocabularySize = vocabularySize;
+        }
+
+        public Alphabet wordAlphabet;
+        public int numDocuments;
+        public int vocabularySize;
+    }
+    private TopicModelInfo loadTopicModelInfo(String pathToTopicModel, String pathToVectorWords) throws Exception {
         System.out.println("Loading topic model info " + pathToTopicModel);
         ParallelTopicModel tm = ParallelTopicModel.read(
                 new File(pathToTopicModel));
@@ -259,8 +260,16 @@ public class LFLDA
 
         Alphabet alp = tm.getAlphabet();
         numDocuments = tm.getData().size();
-        vocabularySize = determineVocabularySize(tm, vectorWords);
-        return (alp, numDocuments, vocabularySize);
+        vocabularySize = determineVocabularySize(tm, getVectorWords(pathToVectorWords));
+        return new TopicModelInfo(alp, numDocuments, vocabularySize);
+    }
+    private static Set<String> getVectorWords(String pathToVectorWords) throws Exception {
+        Set<String> vectorWords = new HashSet<>();
+        BufferedReader br = new BufferedReader(new FileReader(pathToVectorWords));
+        for (String word; (word = br.readLine()) != null;) {
+            vectorWords.add(word);
+        }
+        return vectorWords;
     }
 
     private int determineVocabularySize(ParallelTopicModel tm, Set<String> vectorWords) throws Exception {
@@ -604,4 +613,3 @@ public class LFLDA
         writeTopicWordPros();
     }
 }
-*/
