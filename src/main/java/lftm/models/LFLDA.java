@@ -178,10 +178,11 @@ public class LFLDA
         int docId = 0;
         // for all documents
         Alphabet wordAlphabet = tm.wordAlphabet;
-        BufferedReader br = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
-        word2IdVocabulary = readWord2IdVocabulary(br.readLine());
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
-        for (String line; (line = br.readLine()) != null;) {
+        BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        for (String line; (line = brDocument.readLine()) != null;) {
             List<Integer> document = new ArrayList<Integer>();
             List<Integer> topics = new ArrayList<Integer>();
             String[] tokens = line.split(" ");
