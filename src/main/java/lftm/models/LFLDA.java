@@ -365,11 +365,13 @@ public class LFLDA
     public void optimizeTopicVectors()
     {
         System.out.println("\t\tEstimating topic vectors ...");
+        System.out.println(new Date());
         sumExpValues = new double[numTopics];
         dotProductValues = new double[numTopics][vocabularySize];
         expDotProductValues = new double[numTopics][vocabularySize];
 
         final AtomicInteger finishedTopics = new AtomicInteger(0);
+        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
         Parallel.loop(numTopics, new Parallel.LoopInt()
         {
             @Override
@@ -417,11 +419,13 @@ public class LFLDA
             }
         });
         System.out.println();
+        System.out.println(new Date());
     }
 
     public void sampleSingleIteration()
     {
         System.out.println("\t\tRunning iteration ...");
+        System.out.println(new Date());
         for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
             if (dIndex % 100000 == 0) {
                 System.out.print(dIndex + " ");
@@ -472,6 +476,7 @@ public class LFLDA
                 topicAssignments.get(dIndex).set(wIndex, subtopic);
             }
         }
+        System.out.println(new Date());
     }
 
     public void writeParameters()
