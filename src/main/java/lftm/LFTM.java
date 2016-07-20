@@ -108,6 +108,7 @@ public class LFTM
                 continue;
             }
 
+            boolean first = true;
             // for all words
             for (int i = 0; i < wordFeatures.length; i += 1) {
                 int featureId = wordFeatures[i];
@@ -122,8 +123,9 @@ public class LFTM
                         word2IdVocabulary.put(word, wordId);
                         lastWordId = wordId;
                     }
-                    if (i == 0) {
+                    if (first) {
                         pwDocuments.write(wordId + "-" + topicId);
+                        first = false;
                     } else {
                         pwDocuments.write(" " + wordId + "-" + topicId);
                     }
