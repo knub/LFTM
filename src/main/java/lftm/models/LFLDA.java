@@ -6,6 +6,7 @@ import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.AlphabetCarrying;
 import cc.mallet.types.MatrixOps;
+import com.carrotsearch.hppc.IntArrayList;
 import lftm.utility.*;
 
 import java.io.*;
@@ -38,8 +39,8 @@ public class LFLDA
     public int numInitIterations;
     public int numIterations; // Number of EM-style sampling iterations
 
-    public List<List<Integer>> corpus; // Word ID-based corpus
-    public List<List<Integer>> topicAssignments; // Topics assignments for words
+    public List<IntArrayList> corpus; // Word ID-based corpus
+    public List<IntArrayList> topicAssignments; // Topics assignments for words
                                                  // in the corpus
     public int numDocuments; // Number of documents in the corpus
 
@@ -138,8 +139,8 @@ public class LFLDA
         System.out.println("Reading topic modeling corpus from topic model");
 
         numDocuments = tm.numDocuments;
-        corpus = new ArrayList<List<Integer>>(numDocuments);
-        topicAssignments = new ArrayList<List<Integer>>(numDocuments);
+        corpus = new ArrayList<IntArrayList>(numDocuments);
+        topicAssignments = new ArrayList<IntArrayList>(numDocuments);
         vocabularySize = tm.vocabularySize;
 
         docTopicCount = new int[numDocuments][numTopics];
@@ -177,15 +178,15 @@ public class LFLDA
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
         int lineNr = 0;
-        List<Integer> document = new ArrayList<Integer>();
-        List<Integer> topics = new ArrayList<Integer>();
+        IntArrayList document = new IntArrayList();
+        IntArrayList topics = new IntArrayList();
         for (String line; (line = brDocument.readLine()) != null;) {
             if (line.equals("##")) {
                 if (document.size() > 0) {
                     corpus.add(document);
                     topicAssignments.add(topics);
-                    document = new ArrayList<Integer>();
-                    topics = new ArrayList<Integer>();
+                    document = new IntArrayList();
+                    topics = new IntArrayList();
                     docId += 1;
                     if (docId % 100000 == 0) {
                         System.out.println(docId);
