@@ -138,7 +138,7 @@ public class LFLDA
 
         System.out.println("Reading topic modeling corpus from topic model");
 
-        numDocuments = tm.numDocuments;
+        numDocuments = -1;
         corpus = new ArrayList<IntArrayList>(numDocuments);
         topicAssignments = new ArrayList<IntArrayList>(numDocuments);
         vocabularySize = tm.vocabularySize;
@@ -255,14 +255,12 @@ public class LFLDA
     }
 
     class TopicModelInfo {
-        public TopicModelInfo(Alphabet wordAlphabet, int numDocuments, int vocabularySize) {
+        public TopicModelInfo(Alphabet wordAlphabet, int vocabularySize) {
             this.wordAlphabet = wordAlphabet;
-            this.numDocuments = numDocuments;
             this.vocabularySize = vocabularySize;
         }
 
         public Alphabet wordAlphabet;
-        public int numDocuments;
         public int vocabularySize;
     }
     private TopicModelInfo loadTopicModelInfo(String pathToTopicModel, String pathToVectorWords) throws Exception {
@@ -272,9 +270,8 @@ public class LFLDA
         System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
 
         Alphabet alp = tm.getAlphabet();
-        numDocuments = tm.getData().size();
         vocabularySize = determineVocabularySize(tm, getVectorWords(pathToVectorWords));
-        return new TopicModelInfo(alp, numDocuments, vocabularySize);
+        return new TopicModelInfo(alp, vocabularySize);
     }
     private static Set<String> getVectorWords(String pathToVectorWords) throws Exception {
         Set<String> vectorWords = new HashSet<>();
