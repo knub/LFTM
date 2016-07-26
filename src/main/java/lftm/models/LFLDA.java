@@ -25,8 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // */
 
 @SuppressWarnings("ALL")
-public class LFLDA
-{
+public class LFLDA {
     public double alpha; // Hyper-parameter alpha
     public double beta; // Hyper-parameter alpha
     public double alphaSum; // alpha * numTopics
@@ -72,7 +71,7 @@ public class LFLDA
     // Double array used to sample a topic
     public double[] multiPros;
     // Path to the directory containing the corpus
-    public String folderPath;
+//    public String folderPath;
     // Path to the topic modeling corpus
     public String topicModelPath;
     public String vectorFilePath;
@@ -87,10 +86,10 @@ public class LFLDA
     public final double l2Regularizer = 0.01; // L2 regularizer value for learning topic vectors
     public final double tolerance = 0.05; // Tolerance value for LBFGS convergence
 
-    public String expName = "LFLDA";
-    public String orgExpName = "LFLDA";
     public String tAssignsFilePath = "";
     public int savestep = 0;
+
+    private final LFTMTopicModelWriter writer;
 
     public static boolean alphabetsMatch (AlphabetCarrying object1, AlphabetCarrying object2) {
         Alphabet a1 = object1.getAlphabet();
@@ -110,7 +109,7 @@ public class LFLDA
 
     public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int ndocs,
-                 int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
+                 int inNumIterations, int inTopWords, int inSaveStep)
         throws Exception {
         alpha = inAlpha;
         beta = inBeta;
@@ -119,13 +118,12 @@ public class LFLDA
         numIterations = inNumIterations;
         topWords = inTopWords;
         savestep = inSaveStep;
-        expName = inExpName;
-        orgExpName = expName;
         vectorFilePath = pathToWordVectorsFile;
         topicModelPath = pathToTopicModel;
-        folderPath = topicModelPath.substring(0,
-                Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
+//        folderPath = topicModelPath.substring(0,
+//                Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
         numDocuments = ndocs;
+        writer = new LFTMTopicModelWriter(this);
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
@@ -332,22 +330,18 @@ public class LFLDA
         for (int iter = 1; iter <= numIterations; iter++) {
 
             System.out.println("\tLFLDA sampling iteration: " + iter);
-
             optimizeTopicVectors();
-
             sampleSingleIteration();
 
-            if ((savestep > 0) && (iter % savestep == 0) && (iter < numIterations)) {
+            if (savestep > 0 && iter % savestep == 0 && iter < numIterations) {
                 System.out.println("\t\tSaving the output from the " + iter + "^{th} sample");
-                expName = orgExpName + "-" + iter;
-                write();
+                writer.write(String.valueOf(iter));
             }
         }
-        expName = orgExpName;
 
-        writeParameters();
+        writer.writeParameters();
         System.out.println("Writing output from the last sample ...");
-        write();
+        writer.write("final");
 
         System.out.println("Sampling completed!");
     }
@@ -469,154 +463,4 @@ public class LFLDA
         System.out.println(new Date());
     }
 
-    public void writeParameters()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName + ".paras"));
-        writer.write("-model" + "\t" + "LFLDA");
-        writer.write("\n-topicmodel" + "\t" + topicModelPath);
-        writer.write("\n-vectors" + "\t" + vectorFilePath);
-        writer.write("\n-ntopics" + "\t" + numTopics);
-        writer.write("\n-alpha" + "\t" + alpha);
-        writer.write("\n-beta" + "\t" + beta);
-        writer.write("\n-lambda" + "\t" + lambda);
-        writer.write("\n-niters" + "\t" + numIterations);
-        writer.write("\n-twords" + "\t" + topWords);
-        writer.write("\n-name" + "\t" + expName);
-        if (tAssignsFilePath.length() > 0)
-            writer.write("\n-initFile" + "\t" + tAssignsFilePath);
-        if (savestep > 0)
-            writer.write("\n-sstep" + "\t" + savestep);
-
-        writer.close();
-    }
-
-    public void writeDictionary()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName
-                + ".vocabulary"));
-        for (String word : word2IdVocabulary.keySet()) {
-            writer.write(word + " " + word2IdVocabulary.get(word) + "\n");
-        }
-        writer.close();
-    }
-
-    public void writeIDbasedCorpus()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName
-                + ".IDcorpus"));
-        for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
-            int docSize = corpus.get(dIndex).size();
-            for (int wIndex = 0; wIndex < docSize; wIndex++) {
-                writer.write(corpus.get(dIndex).get(wIndex) + " ");
-            }
-            writer.write("\n");
-        }
-        writer.close();
-    }
-
-    public void writeTopicAssignments()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName
-                + ".topicAssignments"));
-        for (int dIndex = 0; dIndex < numDocuments; dIndex++) {
-            int docSize = corpus.get(dIndex).size();
-            for (int wIndex = 0; wIndex < docSize; wIndex++) {
-                writer.write(topicAssignments.get(dIndex).get(wIndex) + " ");
-            }
-            writer.write("\n");
-        }
-        writer.close();
-    }
-
-    public void writeTopicVectors()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName
-                + ".topicVectors"));
-        for (int i = 0; i < numTopics; i++) {
-            for (int j = 0; j < vectorSize; j++)
-                writer.write(topicVectors[i][j] + " ");
-            writer.write("\n");
-        }
-        writer.close();
-    }
-
-    public void writeTopTopicalWords()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName
-                + ".topWords"));
-
-        for (int tIndex = 0; tIndex < numTopics; tIndex++) {
-            writer.write("Topic" + new Integer(tIndex) + ":");
-
-            Map<Integer, Double> topicWordProbs = new TreeMap<Integer, Double>();
-            for (int wIndex = 0; wIndex < vocabularySize; wIndex++) {
-
-                double pro = lambda * expDotProductValues[tIndex][wIndex] / sumExpValues[tIndex]
-                        + (1 - lambda) * (topicWordCountLDA[tIndex][wIndex] + beta)
-                        / (sumTopicWordCountLDA[tIndex] + betaSum);
-
-                topicWordProbs.put(wIndex, pro);
-            }
-            topicWordProbs = FuncUtils.sortByValueDescending(topicWordProbs);
-
-            Set<Integer> mostLikelyWords = topicWordProbs.keySet();
-            int count = 0;
-            for (Integer index : mostLikelyWords) {
-                if (count < topWords) {
-                    writer.write(" " + id2WordVocabulary.get(index));
-                    count += 1;
-                }
-                else {
-                    writer.write("\n\n");
-                    break;
-                }
-            }
-        }
-        writer.close();
-    }
-
-    public void writeTopicWordPros()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName + ".phi"));
-        for (int t = 0; t < numTopics; t++) {
-            for (int w = 0; w < vocabularySize; w++) {
-                double pro = lambda * expDotProductValues[t][w] / sumExpValues[t] + (1 - lambda)
-                        * (topicWordCountLDA[t][w] + beta) / (sumTopicWordCountLDA[t] + betaSum);
-                writer.write(pro + " ");
-            }
-            writer.write("\n");
-        }
-        writer.close();
-    }
-
-    public void writeDocTopicPros()
-        throws IOException
-    {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + expName + ".theta"));
-
-        for (int i = 0; i < numDocuments; i++) {
-            for (int j = 0; j < numTopics; j++) {
-                double pro = (docTopicCount[i][j] + alpha) / (sumDocTopicCount[i] + alphaSum);
-                writer.write(pro + " ");
-            }
-            writer.write("\n");
-        }
-        writer.close();
-    }
-
-    public void write()
-        throws IOException
-    {
-        writeTopTopicalWords();
-        writeDocTopicPros();
-        writeTopicAssignments();
-        writeTopicWordPros();
-    }
 }

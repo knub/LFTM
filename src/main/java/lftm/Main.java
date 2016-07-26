@@ -46,7 +46,7 @@ public class Main
                 case "LFLDA":
                     LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
                             cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.ndocs,
-                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName, cmdArgs.savestep);
+                            cmdArgs.niters, cmdArgs.twords, cmdArgs.savestep);
                     lflda.inference();
                     break;
 //                case "LFDMM":

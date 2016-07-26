@@ -38,9 +38,6 @@ public class CmdArgs
     @Option(name = "-twords", usage = "Specify number of top topical words")
     public int twords = 10;
 
-    @Option(name = "-name", usage = "Specify a name to a topic modeling experiment")
-    public String expModelName = "model";
-
 //    @Option(name = "-dir")
 //    public String dir = "";
 //
