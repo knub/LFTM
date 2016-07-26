@@ -60,7 +60,7 @@ public class LFLDATopicModelWriter {
         BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".topics"));
 
         for (int tIndex = 0; tIndex < lflda.numTopics; tIndex++) {
-            writer.write("Topic" + tIndex + ":");
+            writer.write(String.valueOf(tIndex));
 
             Map<Integer, Double> topicWordProbs = new TreeMap<Integer, Double>();
             for (int wIndex = 0; wIndex < lflda.vocabularySize; wIndex++) {
@@ -81,7 +81,7 @@ public class LFLDATopicModelWriter {
                     count += 1;
                 }
                 else {
-                    writer.write("\n\n");
+                    writer.write("\n");
                     break;
                 }
             }

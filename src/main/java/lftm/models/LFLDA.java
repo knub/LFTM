@@ -120,8 +120,6 @@ public class LFLDA {
         savestep = inSaveStep;
         vectorFilePath = pathToWordVectorsFile;
         topicModelPath = pathToTopicModel;
-//        folderPath = topicModelPath.substring(0,
-//                Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
         numDocuments = ndocs;
         writer = new LFLDATopicModelWriter(this);
 
@@ -282,7 +280,6 @@ public class LFLDA {
                 size += 1;
             }
         }
-        it = tm.getAlphabet().iterator();
         return size;
     }
 
