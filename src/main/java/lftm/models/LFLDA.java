@@ -36,7 +36,6 @@ public class LFLDA
     public int topWords; // Number of most probable words for each topic
 
     public double lambda; // Mixture weight value
-    public int numInitIterations;
     public int numIterations; // Number of EM-style sampling iterations
 
     public List<IntArrayList> corpus; // Word ID-based corpus
@@ -110,7 +109,7 @@ public class LFLDA
     }
 
     public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int inNumInitIterations,
+                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int ndocs,
                  int inNumIterations, int inTopWords, String inExpName, int inSaveStep)
         throws Exception {
         alpha = inAlpha;
@@ -118,7 +117,6 @@ public class LFLDA
         lambda = inLambda;
         numTopics = inNumTopics;
         numIterations = inNumIterations;
-        numInitIterations = inNumInitIterations;
         topWords = inTopWords;
         savestep = inSaveStep;
         expName = inExpName;
@@ -127,18 +125,12 @@ public class LFLDA
         topicModelPath = pathToTopicModel;
         folderPath = topicModelPath.substring(0,
                 Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
+        numDocuments = ndocs;
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
+        System.out.println("Reading topic model: " + pathToTopicModel);
         TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, pathToVectorWords);
 
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
-
-        System.out.println("Reading vector words: " + pathToVectorWords);
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
-
-        System.out.println("Reading topic modeling corpus from topic model");
-
-        numDocuments = -1;
         corpus = new ArrayList<IntArrayList>(numDocuments);
         topicAssignments = new ArrayList<IntArrayList>(numDocuments);
         vocabularySize = tm.vocabularySize;
@@ -164,14 +156,24 @@ public class LFLDA
         System.out.println("alpha: " + alpha);
         System.out.println("beta: " + beta);
         System.out.println("lambda: " + lambda);
-        System.out.println("Number of initial sampling iterations: " + numInitIterations);
-        System.out.println("Number of EM-style sampling iterations for the LF-LDA model: " + numIterations);
+        System.out.println("Number of sampling iterations for the LF-LDA model: " + numIterations);
         System.out.println("Number of top topical words: " + topWords);
 
+        readCorpus(pathToTopicModel, tm);
 
+        System.out.println("Reading vectors: " + vectorFilePath);
+        readWordVectorsFile(vectorFilePath);
+
+        System.out.println("Initializing embedding datastructures");
+        topicVectors = new double[numTopics][vectorSize];
+        dotProductValues = new double[numTopics][vocabularySize];
+        expDotProductValues = new double[numTopics][vocabularySize];
+        sumExpValues = new double[numTopics];
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
+    }
+
+    private void readCorpus(String pathToTopicModel, TopicModelInfo tm) throws IOException {
         int docId = 0;
-        // for all documents
         Alphabet wordAlphabet = tm.wordAlphabet;
         BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda.alphabet"));
         word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
@@ -180,6 +182,8 @@ public class LFLDA
         int lineNr = 0;
         IntArrayList document = new IntArrayList();
         IntArrayList topics = new IntArrayList();
+
+        // for all documents
         for (String line; (line = brDocument.readLine()) != null;) {
             if (line.equals("##")) {
                 if (document.size() > 0) {
@@ -222,17 +226,6 @@ public class LFLDA
             }
             lineNr += 1;
         }
-
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
-        System.out.println("Reading vectors: " + vectorFilePath);
-        readWordVectorsFile(vectorFilePath);
-        System.out.println("Initializing embedding datastructures");
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
-        topicVectors = new double[numTopics][vectorSize];
-        dotProductValues = new double[numTopics][vocabularySize];
-        expDotProductValues = new double[numTopics][vocabularySize];
-        sumExpValues = new double[numTopics];
-        System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
     }
 
     private HashMap<Integer, String> buildId2WordVocabulary(HashMap<String, Integer> word2IdVocabulary) {
@@ -487,7 +480,6 @@ public class LFLDA
         writer.write("\n-alpha" + "\t" + alpha);
         writer.write("\n-beta" + "\t" + beta);
         writer.write("\n-lambda" + "\t" + lambda);
-        writer.write("\n-initers" + "\t" + numInitIterations);
         writer.write("\n-niters" + "\t" + numIterations);
         writer.write("\n-twords" + "\t" + topWords);
         writer.write("\n-name" + "\t" + expName);

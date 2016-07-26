@@ -29,8 +29,8 @@ public class CmdArgs
     @Option(name = "-lambda", usage = "Specify mixture weight lambda")
     public double lambda = 0.6;
 
-    @Option(name = "-initers", usage = "Specify number of initial sampling iterations")
-    public int initers = 0;
+    @Option(name = "-ndocs", usage = "Specify number of documents")
+    public int ndocs = 0;
 
     @Option(name = "-niters", usage = "Specify number of EM-style sampling iterations")
     public int niters = 200;
