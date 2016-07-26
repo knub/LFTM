@@ -89,7 +89,7 @@ public class LFLDA {
     public String tAssignsFilePath = "";
     public int savestep = 0;
 
-    private final LFTMTopicModelWriter writer;
+    private final LFLDATopicModelWriter writer;
 
     public static boolean alphabetsMatch (AlphabetCarrying object1, AlphabetCarrying object2) {
         Alphabet a1 = object1.getAlphabet();
@@ -123,7 +123,7 @@ public class LFLDA {
 //        folderPath = topicModelPath.substring(0,
 //                Math.max(topicModelPath.lastIndexOf("/"), topicModelPath.lastIndexOf("\\")) + 1);
         numDocuments = ndocs;
-        writer = new LFTMTopicModelWriter(this);
+        writer = new LFLDATopicModelWriter(this);
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
