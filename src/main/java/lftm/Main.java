@@ -132,15 +132,16 @@ public class Main
             pwDocuments.println("##");
         }
 
-        boolean first = true;
-        for (Map.Entry<String, Integer> entry : word2IdVocabulary.entrySet()) {
-            if (first) {
+        final boolean[] first = { true };
+        word2IdVocabulary.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(entry -> {
+            if (first[0]) {
                 pwAlphabet.write(entry.getKey() + "#" + entry.getValue());
-                first = false;
+                first[0] = false;
             } else {
-                pwAlphabet.write(" " + entry.getKey() + "#" + entry.getValue());
+                pwAlphabet.write("\n" + entry.getKey() + "#" + entry.getValue());
             }
-        }
+
+        });
         pwDocuments.close();
         pwAlphabet.close();
     }

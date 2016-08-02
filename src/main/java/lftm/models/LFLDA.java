@@ -171,8 +171,7 @@ public class LFLDA {
     private void readCorpus(String pathToTopicModel, TopicModelInfo tm) throws IOException {
         int docId = 0;
         Alphabet wordAlphabet = tm.wordAlphabet;
-        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda.alphabet"));
-        word2IdVocabulary = readWord2IdVocabulary(brAlphabet.readLine());
+        word2IdVocabulary = readWord2IdVocabulary(pathToTopicModel);
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
         int lineNr = 0;
@@ -232,14 +231,15 @@ public class LFLDA {
         return result;
     }
 
-    private HashMap<String,Integer> readWord2IdVocabulary(String line) {
-        HashMap<String, Integer> result = new HashMap<>();
-        String[] split = line.split(" ");
-        for (String alphabetEntry : split) {
-            String[] innerSplit = alphabetEntry.split("#");
-            result.put(innerSplit[0], Integer.parseInt(innerSplit[1]));
+    private HashMap<String,Integer> readWord2IdVocabulary(String pathToTopicModel) throws FileNotFoundException {
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda.alphabet"));
 
-        }
+        HashMap<String, Integer> result = new HashMap<>();
+        brAlphabet.lines().forEach(line -> {
+            String[] split = line.split("#");
+            result.put(split[0], Integer.parseInt(split[1]));
+        });
+
         return result;
     }
 
