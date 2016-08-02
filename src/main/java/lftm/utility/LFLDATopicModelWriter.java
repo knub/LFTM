@@ -18,7 +18,7 @@ public class LFLDATopicModelWriter {
     }
     public void writeParameters() throws IOException
     {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + "lflda.params"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda.params"));
         writer.write("-model" + "\t" + "LFLDA");
         writer.write("\n-topicmodel" + "\t" + lflda.topicModelPath);
         writer.write("\n-vectors" + "\t" + lflda.vectorFilePath);
