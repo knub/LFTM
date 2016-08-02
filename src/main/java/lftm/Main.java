@@ -16,6 +16,7 @@ import lftm.utility.CmdArgs;
 import lftm.eval.ClusteringEval;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.text.BreakIterator;
 import java.util.*;
 
@@ -44,7 +45,7 @@ public class Main
 
             switch (cmdArgs.model) {
                 case "LFLDA":
-                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.vocabulary,
+                    LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors,
                             cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.ndocs,
                             cmdArgs.niters, cmdArgs.twords, cmdArgs.savestep);
                     lflda.inference();
@@ -60,7 +61,7 @@ public class Main
 //                    ClusteringEval.evaluate(cmdArgs.labelFile, cmdArgs.dir, cmdArgs.prob);
 //                    break;
                 case "preprocess-LFLDA":
-                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vocabulary);
+                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vectors);
                     break;
                 default:
                     System.out
@@ -90,14 +91,17 @@ public class Main
         return vectorWords;
     }
 
-    private static void preprocessLFLDA(String pathToTopicModel, String pathToVectorWords) throws Exception {
+    private static void preprocessLFLDA(String pathToTopicModel, String pathToEmbeddings) throws Exception {
         ParallelTopicModel tm = ParallelTopicModel.read(new File(pathToTopicModel));
         HashMap<String, Integer> word2IdVocabulary = new HashMap<>();
         int lastWordId = -1;
-        Set<String> vectorWords = getVectorWords(pathToVectorWords);
+        Set<String> vectorWords = getVectorWords(pathToEmbeddings + ".vocab");
 
-        PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda"))));
-        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(pathToTopicModel + ".lflda.alphabet"))));
+        String embeddingFileName = Paths.get(pathToEmbeddings).getFileName().toString();
+        PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted"))));
+        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"))));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();

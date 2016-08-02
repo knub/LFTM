@@ -107,7 +107,7 @@ public class LFLDA {
         return true;
     }
 
-    public LFLDA(String pathToTopicModel, String pathToWordVectorsFile, String pathToVectorWords,
+    public LFLDA(String pathToTopicModel, String embeddingModel,
                  int inNumTopics, double inAlpha, double inBeta, double inLambda, int ndocs,
                  int inNumIterations, int inTopWords, int inSaveStep)
         throws Exception {
@@ -118,14 +118,14 @@ public class LFLDA {
         numIterations = inNumIterations;
         topWords = inTopWords;
         savestep = inSaveStep;
-        vectorFilePath = pathToWordVectorsFile;
+        vectorFilePath = embeddingModel;
         topicModelPath = pathToTopicModel;
         numDocuments = ndocs;
         writer = new LFLDATopicModelWriter(this);
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
-        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, pathToVectorWords);
+        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, embeddingModel + ".vocab");
 
         corpus = new ArrayList<IntArrayList>(numDocuments);
         topicAssignments = new ArrayList<IntArrayList>(numDocuments);
