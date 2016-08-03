@@ -195,6 +195,8 @@ public class LFLDA {
                     if (docId % 100000 == 0) {
                         System.out.println(docId);
                     }
+                } else {
+                    System.out.println("Empty document at line " + lineNr);
                 }
                 continue;
             }
@@ -226,6 +228,7 @@ public class LFLDA {
             }
             lineNr += 1;
         }
+        System.out.println("Finished reading corpus with " + corpus.size() + " documents.");
     }
 
     private HashMap<Integer, String> buildId2WordVocabulary(HashMap<String, Integer> word2IdVocabulary) {
