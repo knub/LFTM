@@ -10,6 +10,7 @@ import com.carrotsearch.hppc.IntArrayList;
 import lftm.utility.*;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -75,6 +76,8 @@ public class LFLDA {
     // Path to the topic modeling corpus
     public String topicModelPath;
     public String vectorFilePath;
+    public String embeddingModelPath;
+    public String embeddingFileName;
 
     public double[][] wordVectors; // Vector representations for words
     public double[][] topicVectors;// Vector representations for topics
@@ -118,7 +121,9 @@ public class LFLDA {
         numIterations = inNumIterations;
         topWords = inTopWords;
         savestep = inSaveStep;
-        vectorFilePath = embeddingModel;
+        this.embeddingModelPath = embeddingModel;
+        embeddingFileName = Paths.get(embeddingModelPath).getFileName().toString();
+        vectorFilePath = embeddingModel + ".txt";
         topicModelPath = pathToTopicModel;
         numDocuments = ndocs;
         writer = new LFLDATopicModelWriter(this);
@@ -173,7 +178,7 @@ public class LFLDA {
         Alphabet wordAlphabet = tm.wordAlphabet;
         word2IdVocabulary = readWord2IdVocabulary(pathToTopicModel);
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
-        BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + ".lflda"));
+        BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + "." + embeddingFileName + ".restricted"));
         int lineNr = 0;
         IntArrayList document = new IntArrayList();
         IntArrayList topics = new IntArrayList();
@@ -232,7 +237,7 @@ public class LFLDA {
     }
 
     private HashMap<String,Integer> readWord2IdVocabulary(String pathToTopicModel) throws FileNotFoundException {
-        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + ".lflda.alphabet"));
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"));
 
         HashMap<String, Integer> result = new HashMap<>();
         brAlphabet.lines().forEach(line -> {
@@ -332,7 +337,7 @@ public class LFLDA {
 
             if (savestep > 0 && iter % savestep == 0 && iter < numIterations) {
                 System.out.println("\t\tSaving the output from the " + iter + "^{th} sample");
-                writer.write(String.valueOf(iter));
+                writer.write(String.format("%03d", new Integer(iter)));
             }
         }
 
