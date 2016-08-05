@@ -102,11 +102,16 @@ public class Main
                 pathToTopicModel + "." + embeddingFileName + ".restricted"))));
         PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"))));
+        PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
+        BufferedReader classReader = new BufferedReader(new FileReader("/home/stefan.bunk/master-thesis/data/20newsgroups/20news-bydate-train-with-classes/articles.class.txt"));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
         ArrayList<TopicAssignment> data = tm.getData();
         for (TopicAssignment doc : data) {
+            String clazz = classReader.readLine();
+
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
             assert wordFeatures.length == topicFeatures.length :
@@ -136,6 +141,7 @@ public class Main
                 }
             }
             if (atLeastOneWord) {
+                pwClasses.println(clazz);
                 pwDocuments.println("##");
             }
         }
@@ -152,6 +158,7 @@ public class Main
         });
         pwDocuments.close();
         pwAlphabet.close();
+        pwClasses.close();
     }
 
     public static void help(CmdLineParser parser)
