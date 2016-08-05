@@ -116,12 +116,14 @@ public class Main
                 continue;
             }
 
+            boolean atLeastOneWord = false;
             // for all words
             for (int i = 0; i < wordFeatures.length; i += 1) {
                 int featureId = wordFeatures[i];
                 int topicId = topicFeatures[i];
                 String word = (String) wordAlphabet.lookupObject(featureId);
                 if (vectorWords.contains(word)) {
+                    atLeastOneWord = true;
                     int wordId;
                     if (word2IdVocabulary.containsKey(word)) {
                         wordId = word2IdVocabulary.get(word);
@@ -133,7 +135,9 @@ public class Main
                     pwDocuments.println(String.format("%06d#%06d", wordId, topicId));
                 }
             }
-            pwDocuments.println("##");
+            if (atLeastOneWord) {
+                pwDocuments.println("##");
+            }
         }
 
         final boolean[] first = { true };
