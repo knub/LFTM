@@ -104,6 +104,7 @@ public class Main
                 pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"))));
         PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
+        // HARDCODE
         BufferedReader classReader = new BufferedReader(new FileReader("/home/stefan.bunk/master-thesis/data/20newsgroups/20news-bydate-train-with-classes/articles.class.txt"));
 
         // for all documents
