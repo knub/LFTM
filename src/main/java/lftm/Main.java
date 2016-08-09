@@ -61,7 +61,7 @@ public class Main
 //                    ClusteringEval.evaluate(cmdArgs.labelFile, cmdArgs.dir, cmdArgs.prob);
 //                    break;
                 case "preprocess-LFLDA":
-                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vectors);
+                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.classes);
                     break;
                 default:
                     System.out
@@ -91,7 +91,7 @@ public class Main
         return vectorWords;
     }
 
-    private static void preprocessLFLDA(String pathToTopicModel, String pathToEmbeddings) throws Exception {
+    private static void preprocessLFLDA(String pathToTopicModel, String pathToEmbeddings, String classesFile) throws Exception {
         ParallelTopicModel tm = ParallelTopicModel.read(new File(pathToTopicModel));
         HashMap<String, Integer> word2IdVocabulary = new HashMap<>();
         int lastWordId = -1;
@@ -104,8 +104,10 @@ public class Main
                 pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"))));
         PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
-        // HARDCODE
-        BufferedReader classReader = new BufferedReader(new FileReader("/home/stefan.bunk/master-thesis/data/20newsgroups/20news-bydate-train-with-classes/articles.class.txt"));
+
+        if (classesFile.equals("NONE"))
+            throw new Exception("Must set classes file!");
+        BufferedReader classReader = new BufferedReader(new FileReader(classesFile));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
