@@ -14,7 +14,7 @@ public class CmdArgs
     @Option(name = "-vectors", usage = "Specify path to the file containing word vectors", required = true)
     public String vectors = "";
 
-    @Option(name = "-classes", usage = "Specify path to the file containing word vectors", required = true)
+    @Option(name = "-classes", usage = "Specify path to the file containing word vectors")
     public String classes = "NONE";
 
     @Option(name = "-ntopics", usage = "Specify number of topics")
