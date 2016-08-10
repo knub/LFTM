@@ -9,6 +9,7 @@ import lftm.models.LFDMM;
 
 import lftm.models.LFLDA;
 import lftm.utility.MTRandom;
+import org.apache.commons.lang3.text.WordUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -130,7 +131,9 @@ public class Main
                 int featureId = wordFeatures[i];
                 int topicId = topicFeatures[i];
                 String word = (String) wordAlphabet.lookupObject(featureId);
-                if (vectorWords.contains(word)) {
+                if (vectorWords.contains(word) ||
+                        vectorWords.contains(word.toUpperCase()) ||
+                        vectorWords.contains(WordUtils.capitalize(word))) {
                     atLeastOneWord = true;
                     int wordId;
                     if (word2IdVocabulary.containsKey(word)) {
