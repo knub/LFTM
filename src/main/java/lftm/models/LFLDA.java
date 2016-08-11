@@ -344,7 +344,6 @@ public class LFLDA {
             }
         }
 
-        writer.writeParameters();
         System.out.println("Writing output from the last sample ...");
         writer.write(String.valueOf(numIterations));
 

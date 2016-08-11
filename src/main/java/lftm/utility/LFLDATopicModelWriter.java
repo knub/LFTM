@@ -12,13 +12,15 @@ import java.util.TreeMap;
 public class LFLDATopicModelWriter {
 
     private final LFLDA lflda;
+    private final String baseName;
 
     public LFLDATopicModelWriter(LFLDA lflda ) {
         this.lflda = lflda;
+        baseName = lflda.topicModelPath + ".lflda";
     }
     public void writeParameters() throws IOException
     {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda.params"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + ".params"));
         writer.write("-model" + "\t" + "LFLDA");
         writer.write("\n-topicmodel" + "\t" + lflda.topicModelPath);
         writer.write("\n-vectors" + "\t" + lflda.vectorFilePath);
@@ -35,7 +37,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeTopicAssignments(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".topic-assignments"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + "." + name + ".topic-assignments"));
         for (int dIndex = 0; dIndex < lflda.numDocuments; dIndex++) {
             int docSize = lflda.corpus.get(dIndex).size();
             for (int wIndex = 0; wIndex < docSize; wIndex++) {
@@ -47,7 +49,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeTopicVectors(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".topic-vectors"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + "." + name + ".topic-vectors"));
         for (int i = 0; i < lflda.numTopics; i++) {
             for (int j = 0; j < lflda.vectorSize; j++)
                 writer.write(lflda.topicVectors[i][j] + " ");
@@ -57,7 +59,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeTopTopicalWords(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".topics"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + "." + name + ".topics"));
 
         for (int tIndex = 0; tIndex < lflda.numTopics; tIndex++) {
             writer.write(String.valueOf(tIndex));
@@ -90,7 +92,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeTopicWordPros(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".phi"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + "." + name + ".phi"));
         for (int t = 0; t < lflda.numTopics; t++) {
             for (int w = 0; w < lflda.vocabularySize; w++) {
                 double pro = lflda.lambda * lflda.expDotProductValues[t][w] / lflda.sumExpValues[t] + (1 - lflda.lambda)
@@ -103,7 +105,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeDocTopicPros(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(lflda.topicModelPath + ".lflda-" + name + ".theta"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + "." + name + ".theta"));
 
         for (int i = 0; i < lflda.numDocuments; i++) {
             for (int j = 0; j < lflda.numTopics; j++) {
@@ -118,6 +120,7 @@ public class LFLDATopicModelWriter {
     public void write(String name) throws IOException {
         writeTopTopicalWords(name);
         if (name.equals(String.valueOf(this.lflda.numIterations))) {
+            writeParameters();
             writeDocTopicPros(name);
             writeTopicAssignments(name);
             writeTopicWordPros(name);
