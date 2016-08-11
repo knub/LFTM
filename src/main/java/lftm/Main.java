@@ -4,21 +4,16 @@ import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
-import cc.mallet.types.FeatureVectorSequence;
-import lftm.models.LFDMM;
 
 import lftm.models.LFLDA;
-import lftm.utility.MTRandom;
 import org.apache.commons.lang3.text.WordUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import lftm.utility.CmdArgs;
-import lftm.eval.ClusteringEval;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.text.BreakIterator;
 import java.util.*;
 
 /**
@@ -51,13 +46,6 @@ public class Main
                             cmdArgs.niters, cmdArgs.twords, cmdArgs.savestep);
                     lflda.inference();
                     break;
-//                case "LFDMM":
-//                    LFDMM lfdmm = new LFDMM(cmdArgs.corpus, cmdArgs.vectors, cmdArgs.ntopics,
-//                            cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.initers,
-//                            cmdArgs.niters, cmdArgs.twords, cmdArgs.expModelName,
-//                            "", 0);
-//                    lfdmm.inference();
-//                    break;
 //                case "Eval":
 //                    ClusteringEval.evaluate(cmdArgs.labelFile, cmdArgs.dir, cmdArgs.prob);
 //                    break;
