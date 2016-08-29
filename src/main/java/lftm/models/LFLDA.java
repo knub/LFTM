@@ -160,7 +160,7 @@ public class LFLDA {
         System.out.println("Number of sampling iterations for the LF-LDA model: " + numIterations);
         System.out.println("Number of top topical words: " + topWords);
 
-        readCorpus(pathToTopicModel, tm);
+        readCorpus(pathToTopicModel);
 
         System.out.println("Reading vectors: " + vectorFilePath);
         readWordVectorsFile(vectorFilePath);
@@ -173,9 +173,8 @@ public class LFLDA {
         System.out.println("Memory: " + FreeMemory.get(true, 5) + " MB");
     }
 
-    private void readCorpus(String pathToTopicModel, TopicModelInfo tm) throws IOException {
+    private void readCorpus(String pathToTopicModel) throws IOException {
         int docId = 0;
-        Alphabet wordAlphabet = tm.wordAlphabet;
         word2IdVocabulary = readWord2IdVocabulary(pathToTopicModel);
         id2WordVocabulary = buildId2WordVocabulary(word2IdVocabulary);
         BufferedReader brDocument = new BufferedReader(new FileReader(pathToTopicModel + "." + embeddingFileName + ".restricted"));

@@ -101,6 +101,7 @@ public class Main
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
         ArrayList<TopicAssignment> data = tm.getData();
+        System.out.println("There are " + data.size() + " documents");
         for (TopicAssignment doc : data) {
             String clazz = classReader.readLine();
 
@@ -140,13 +141,17 @@ public class Main
             }
         }
 
+        if (classReader.readLine() != null) {
+            throw new Exception("Mismatch between documents.");
+        }
+
         final boolean[] first = { true };
         word2IdVocabulary.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(entry -> {
             if (first[0]) {
-                pwAlphabet.write(entry.getKey() + "#" + entry.getValue());
+                pwAlphabet.write(entry.getKey());
                 first[0] = false;
             } else {
-                pwAlphabet.write("\n" + entry.getKey() + "#" + entry.getValue());
+                pwAlphabet.write("\n" + entry.getKey());
             }
 
         });
