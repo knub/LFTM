@@ -90,7 +90,7 @@ public class Main
         PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted"))));
         PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(
-                pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"))));
+                pathToTopicModel + "." + embeddingFileName + ".restricted.vocab"))));
         PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
 
