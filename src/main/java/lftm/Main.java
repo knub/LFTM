@@ -91,6 +91,8 @@ public class Main
                 pathToTopicModel + "." + embeddingFileName + ".restricted"))));
         PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.vocab"))));
+        PrintWriter pwAlphabetWithCounts = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.vocab.counts"))));
         PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
 
@@ -102,6 +104,7 @@ public class Main
         Alphabet wordAlphabet = tm.getAlphabet();
         ArrayList<TopicAssignment> data = tm.getData();
         System.out.println("There are " + data.size() + " documents");
+        Counter<String> c = new Counter<>();
         for (TopicAssignment doc : data) {
             String clazz = classReader.readLine();
 
@@ -124,6 +127,7 @@ public class Main
                         vectorWords.contains(word.toUpperCase()) ||
                         vectorWords.contains(WordUtils.capitalize(word))) {
                     atLeastOneWord = true;
+                    c.add(word);
                     int wordId;
                     if (word2IdVocabulary.containsKey(word)) {
                         wordId = word2IdVocabulary.get(word);
@@ -147,16 +151,22 @@ public class Main
 
         final boolean[] first = { true };
         word2IdVocabulary.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(entry -> {
+            String word = entry.getKey();
+            int wordCount = c.count(word);
+            double wordLogProb = Math.log((double) wordCount / c.totalCount());
             if (first[0]) {
-                pwAlphabet.write(entry.getKey());
+                pwAlphabet.write(word);
+                pwAlphabetWithCounts.write(String.format("%s\t%d\t%f", word, wordCount, wordLogProb));
                 first[0] = false;
             } else {
                 pwAlphabet.write("\n" + entry.getKey());
+                pwAlphabetWithCounts.write(String.format("%n%s\t%d\t%f", word, wordCount, wordLogProb));
             }
 
         });
         pwDocuments.close();
         pwAlphabet.close();
+        pwAlphabetWithCounts.close();
         pwClasses.close();
     }
 
@@ -164,5 +174,23 @@ public class Main
     {
         System.out.println("java -jar lftm.Main.jar [options ...] [arguments...]");
         parser.printUsage(System.out);
+    }
+}
+
+class Counter<T> {
+    final Map<T, Integer> counts = new HashMap<>();
+    private int totalCount = 0;
+
+    public void add(T t) {
+        counts.merge(t, 1, Integer::sum);
+        totalCount += 1;
+    }
+
+    public int totalCount() {
+        return totalCount;
+    }
+
+    public int count(T t) {
+        return counts.getOrDefault(t, 0);
     }
 }
