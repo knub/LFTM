@@ -108,6 +108,9 @@ public class Main
         for (TopicAssignment doc : data) {
             String clazz = classReader.readLine();
 
+            Integer target = (Integer) doc.instance.getTarget();
+            Integer name = (Integer) doc.instance.getName();
+
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
             assert wordFeatures.length == topicFeatures.length :
@@ -126,6 +129,9 @@ public class Main
                 if (vectorWords.contains(word) ||
                         vectorWords.contains(word.toUpperCase()) ||
                         vectorWords.contains(WordUtils.capitalize(word))) {
+                    if (!atLeastOneWord && target != null && name != null) {
+                        pwDocuments.println(name.toString() + "\t" + target.toString());
+                    }
                     atLeastOneWord = true;
                     c.add(word);
                     int wordId;
