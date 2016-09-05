@@ -50,7 +50,13 @@ public class Main
 //                    ClusteringEval.evaluate(cmdArgs.labelFile, cmdArgs.dir, cmdArgs.prob);
 //                    break;
                 case "preprocess-LFLDA":
-                    preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.classes);
+                    if (cmdArgs.topicModel.contains("sentences")) {
+                        System.out.println("Using sentences parsing");
+                        preprocessLFLDASentences(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.classes);
+                    } else {
+                        System.out.println("Using articles parsing");
+                        preprocessLFLDA(cmdArgs.topicModel, cmdArgs.vectors, cmdArgs.classes);
+                    }
                     break;
                 default:
                     System.out
@@ -108,9 +114,6 @@ public class Main
         for (TopicAssignment doc : data) {
             String clazz = classReader.readLine();
 
-            Integer target = (Integer) doc.instance.getTarget();
-            Integer name = (Integer) doc.instance.getName();
-
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
             assert wordFeatures.length == topicFeatures.length :
@@ -129,9 +132,6 @@ public class Main
                 if (vectorWords.contains(word) ||
                         vectorWords.contains(word.toUpperCase()) ||
                         vectorWords.contains(WordUtils.capitalize(word))) {
-                    if (!atLeastOneWord && target != null && name != null) {
-                        pwDocuments.println(name.toString() + "\t" + target.toString());
-                    }
                     atLeastOneWord = true;
                     c.add(word);
                     int wordId;
@@ -153,6 +153,118 @@ public class Main
 
         if (classReader.readLine() != null) {
             throw new Exception("Mismatch between documents.");
+        }
+
+        final boolean[] first = { true };
+        word2IdVocabulary.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEach(entry -> {
+            String word = entry.getKey();
+            int wordCount = c.count(word);
+            double wordLogProb = Math.log((double) wordCount / c.totalCount());
+            if (first[0]) {
+                pwAlphabet.write(word);
+                pwAlphabetWithCounts.write(String.format("%s\t%d\t%f", word, wordCount, wordLogProb));
+                first[0] = false;
+            } else {
+                pwAlphabet.write("\n" + entry.getKey());
+                pwAlphabetWithCounts.write(String.format("%n%s\t%d\t%f", word, wordCount, wordLogProb));
+            }
+
+        });
+        pwDocuments.close();
+        pwAlphabet.close();
+        pwAlphabetWithCounts.close();
+        pwClasses.close();
+    }
+
+
+    private static void preprocessLFLDASentences(String pathToTopicModel, String pathToEmbeddings, String classesFile) throws Exception {
+        ParallelTopicModel tm = ParallelTopicModel.read(new File(pathToTopicModel));
+        HashMap<String, Integer> word2IdVocabulary = new HashMap<>();
+        int lastWordId = -1;
+        Set<String> vectorWords = getVectorWords(pathToEmbeddings + ".vocab");
+
+        String embeddingFileName = Paths.get(pathToEmbeddings).getFileName().toString();
+        PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted"))));
+        PrintWriter pwAlphabet = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.vocab"))));
+        PrintWriter pwAlphabetWithCounts = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.vocab.counts"))));
+        PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+                pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
+
+        if (!classesFile.equals("NONE"))
+            throw new Exception("Must be set to NONE");
+
+        // for all documents
+        Alphabet wordAlphabet = tm.getAlphabet();
+        ArrayList<TopicAssignment> data = tm.getData();
+        System.out.println("There are " + data.size() + " documents");
+        Counter<String> c = new Counter<>();
+
+        Integer lastName = (Integer) data.get(0).instance.getName();
+        Integer lastTarget = (Integer) data.get(0).instance.getTarget();
+
+        int k = 0;
+        boolean atLeastOneWordInDoc = false;
+        for (TopicAssignment sentence : data) {
+            Integer target = (Integer) sentence.instance.getTarget();
+            Integer name = (Integer) sentence.instance.getName();
+            if (name == null || target == null) {
+                throw new RuntimeException("Name or target is null " + String.valueOf(name) + String.valueOf(target));
+            }
+
+            int[] wordFeatures = ((FeatureSequence) sentence.instance.getData()).getFeatures();
+            int[] topicFeatures = sentence.topicSequence.getFeatures();
+            assert wordFeatures.length == topicFeatures.length :
+                    "Document length does not match " + wordFeatures.length + " - " + topicFeatures.length;
+            if (wordFeatures.length == 0) {
+                System.out.println("Skipping sentence");
+                continue;
+            }
+
+            boolean atLeastOneWord = false;
+            // for all words
+            for (int i = 0; i < wordFeatures.length; i += 1) {
+                int featureId = wordFeatures[i];
+                int topicId = topicFeatures[i];
+                String word = (String) wordAlphabet.lookupObject(featureId);
+                if (vectorWords.contains(word) ||
+                        vectorWords.contains(word.toUpperCase()) ||
+                        vectorWords.contains(WordUtils.capitalize(word))) {
+                    if (!atLeastOneWord) {
+                        pwDocuments.println(name.toString() + "\t" + target.toString());
+                    }
+                    atLeastOneWord = true;
+                    c.add(word);
+                    int wordId;
+                    if (word2IdVocabulary.containsKey(word)) {
+                        wordId = word2IdVocabulary.get(word);
+                    } else {
+                        wordId = lastWordId + 1;
+                        word2IdVocabulary.put(word, wordId);
+                        lastWordId = wordId;
+                    }
+                    pwDocuments.println(String.format("%06d#%06d", wordId, topicId));
+                }
+            }
+            if (atLeastOneWord) {
+                pwDocuments.println("##");
+            }
+            atLeastOneWordInDoc = atLeastOneWordInDoc || atLeastOneWord;
+            if (!name.equals(lastName)) {
+//                k += 1;
+//                System.out.println(String.format("%d %d %d", k, name, lastName));
+                lastName = name;
+                if (atLeastOneWordInDoc) {
+                    pwClasses.println(lastTarget);
+                    lastTarget = target;
+                    atLeastOneWordInDoc = false;
+                }
+            }
+        }
+        if (atLeastOneWordInDoc) {
+            pwClasses.println(lastTarget);
         }
 
         final boolean[] first = { true };

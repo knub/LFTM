@@ -239,12 +239,14 @@ public class LFLDA {
     }
 
     private HashMap<String,Integer> readWord2IdVocabulary(String pathToTopicModel) throws FileNotFoundException {
-        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + "." + embeddingFileName + ".restricted.alphabet"));
+        BufferedReader brAlphabet = new BufferedReader(new FileReader(pathToTopicModel + "." + embeddingFileName + ".restricted.vocab"));
 
         HashMap<String, Integer> result = new HashMap<>();
+        final int[] nextWordIds = {0};
         brAlphabet.lines().forEach(line -> {
             String[] split = line.split("#");
-            result.put(split[0], Integer.parseInt(split[1]));
+            result.put(split[0], nextWordIds[0]);
+            nextWordIds[0] += 1;
         });
 
         return result;
