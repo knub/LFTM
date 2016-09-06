@@ -37,6 +37,7 @@ public class LFLDA {
 
     public double lambda; // Mixture weight value
     public int numIterations; // Number of EM-style sampling iterations
+    public int numDimensions;
 
     public List<IntArrayList> corpus; // Word ID-based corpus
     public List<IntArrayList> topicAssignments; // Topics assignments for words
@@ -126,7 +127,6 @@ public class LFLDA {
         vectorFilePath = embeddingModel + ".txt";
         topicModelPath = pathToTopicModel;
         numDocuments = ndocs;
-        writer = new LFLDATopicModelWriter(this);
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
@@ -163,7 +163,9 @@ public class LFLDA {
         readCorpus(pathToTopicModel);
 
         System.out.println("Reading vectors: " + vectorFilePath);
-        readWordVectorsFile(vectorFilePath);
+        numDimensions = readWordVectorsFile(vectorFilePath);
+
+        writer = new LFLDATopicModelWriter(this);
 
         System.out.println("Initializing embedding datastructures");
         topicVectors = new double[numTopics][vectorSize];
@@ -292,7 +294,7 @@ public class LFLDA {
         return size;
     }
 
-    public void readWordVectorsFile(String pathToWordVectorsFile)
+    public int readWordVectorsFile(String pathToWordVectorsFile)
         throws Exception
     {
         System.out.println("Reading word vectors from word-vectors file " + pathToWordVectorsFile
@@ -301,6 +303,9 @@ public class LFLDA {
         BufferedReader br = new BufferedReader(new FileReader(pathToWordVectorsFile));
         String[] elements = br.readLine().trim().split("\\s+");
         vectorSize = elements.length - 1;
+        if (vectorSize < 20) {
+            throw new RuntimeException("Vector size too low: " + String.valueOf(vectorSize));
+        }
         System.out.println("Word vector size: " + vectorSize);
         System.out.println("Vocabulary size: " + vocabularySize);
         wordVectors = new double[vocabularySize][vectorSize];
@@ -327,6 +332,7 @@ public class LFLDA {
                 throw new Exception("The word \"" + w + "\" at index " + i + " doesn't have a corresponding vector!!!");
             }
         }
+        return vectorSize;
     }
 
     public void inference() throws IOException
