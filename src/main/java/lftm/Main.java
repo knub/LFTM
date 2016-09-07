@@ -92,6 +92,7 @@ public class Main
         int lastWordId = -1;
         Set<String> vectorWords = getVectorWords(pathToEmbeddings + ".vocab");
         System.out.println("Vocabulary contains " + vectorWords.size() + " words!");
+        boolean doNotTrackClasses = classesFile.equals("NO-CLASSES");
 
         String embeddingFileName = Paths.get(pathToEmbeddings).getFileName().toString();
         PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(
@@ -100,12 +101,17 @@ public class Main
                 pathToTopicModel + "." + embeddingFileName + ".restricted.vocab"))));
         PrintWriter pwAlphabetWithCounts = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.vocab.counts"))));
-        PrintWriter pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
+        PrintWriter pwClasses = null;
+        if (!doNotTrackClasses)
+            pwClasses = new PrintWriter(new BufferedWriter(new FileWriter(new File(
                 pathToTopicModel + "." + embeddingFileName + ".restricted.classes"))));
+
 
         if (classesFile.equals("NONE"))
             throw new Exception("Must set classes file!");
-        BufferedReader classReader = new BufferedReader(new FileReader(classesFile));
+        BufferedReader classReader = null;
+        if (!doNotTrackClasses)
+            classReader = new BufferedReader(new FileReader(classesFile));
 
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
@@ -113,7 +119,7 @@ public class Main
         System.out.println("There are " + data.size() + " documents");
         Counter<String> c = new Counter<>();
         for (TopicAssignment doc : data) {
-            String clazz = classReader.readLine();
+            String clazz = doNotTrackClasses ? "doesn't matter" : classReader.readLine();
 
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
@@ -149,12 +155,13 @@ public class Main
                 }
             }
             if (atLeastOneWord) {
-                pwClasses.println(clazz);
+                if (!doNotTrackClasses)
+                    pwClasses.println(clazz);
                 pwDocuments.println("##");
             }
         }
 
-        if (classReader.readLine() != null) {
+        if (!doNotTrackClasses && classReader.readLine() != null) {
             throw new Exception("Mismatch between documents.");
         }
 
@@ -176,7 +183,8 @@ public class Main
         pwDocuments.close();
         pwAlphabet.close();
         pwAlphabetWithCounts.close();
-        pwClasses.close();
+        if (!doNotTrackClasses)
+            pwClasses.close();
     }
 
 
