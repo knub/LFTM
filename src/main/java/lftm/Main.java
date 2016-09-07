@@ -91,6 +91,7 @@ public class Main
         HashMap<String, Integer> word2IdVocabulary = new HashMap<>();
         int lastWordId = -1;
         Set<String> vectorWords = getVectorWords(pathToEmbeddings + ".vocab");
+        System.out.println("Vocabulary contains " + vectorWords.size() + " words!");
 
         String embeddingFileName = Paths.get(pathToEmbeddings).getFileName().toString();
         PrintWriter pwDocuments = new PrintWriter(new BufferedWriter(new FileWriter(new File(
@@ -143,6 +144,8 @@ public class Main
                         lastWordId = wordId;
                     }
                     pwDocuments.println(String.format("%06d#%06d", wordId, topicId));
+                } else {
+//                    System.out.println("Ignoring word: " + word);
                 }
             }
             if (atLeastOneWord) {
