@@ -130,11 +130,12 @@ public class LFLDA {
 
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
-        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, embeddingModel + ".vocab");
+        vocabularySize = getVectorWords(this.topicModelPath + "." + embeddingFileName + ".restricted.vocab").size();
+//        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, embeddingModel + ".vocab");
 
         corpus = new ArrayList<IntArrayList>(numDocuments);
         topicAssignments = new ArrayList<IntArrayList>(numDocuments);
-        vocabularySize = tm.vocabularySize;
+//        vocabularySize = tm.vocabularySize;
 
         docTopicCount = new int[numDocuments][numTopics];
         sumDocTopicCount = new int[numDocuments];
@@ -309,7 +310,7 @@ public class LFLDA {
         System.out.println("Word vector size: " + vectorSize);
         System.out.println("Vocabulary size: " + vocabularySize);
         wordVectors = new double[vocabularySize][vectorSize];
-        String word = elements[0];
+        String word = elements[0].toLowerCase();
         if (word2IdVocabulary.containsKey(word)) {
             for (int j = 0; j < vectorSize; j++) {
                 wordVectors[word2IdVocabulary.get(word)][j] = new Double(elements[j + 1]);
@@ -317,7 +318,7 @@ public class LFLDA {
         }
         for (String line; (line = br.readLine()) != null;) {
             elements = line.trim().split("\\s+");
-            word = elements[0];
+            word = elements[0].toLowerCase();
             if (word2IdVocabulary.containsKey(word)) {
                 for (int j = 0; j < vectorSize; j++) {
                     wordVectors[word2IdVocabulary.get(word)][j] = new Double(elements[j + 1]);
