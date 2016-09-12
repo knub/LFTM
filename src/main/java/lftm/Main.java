@@ -120,6 +120,10 @@ public class Main
         Counter<String> c = new Counter<>();
         for (TopicAssignment doc : data) {
             String clazz = doNotTrackClasses ? "doesn't matter" : classReader.readLine();
+            if (!doNotTrackClasses) {
+                if (!clazz.equals(doc.instance.getTarget().toString()))
+                    System.out.println(clazz + " " + doc.instance.getTarget().toString());
+            }
 
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
@@ -150,6 +154,7 @@ public class Main
                         lastWordId = wordId;
                     }
                     pwDocuments.println(String.format("%06d#%06d", wordId, topicId));
+//                    pwDocuments.print(word + " ");
                 } else {
 //                    System.out.println("Ignoring word: " + word);
                 }
