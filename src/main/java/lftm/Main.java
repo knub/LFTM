@@ -41,6 +41,7 @@ public class Main
 
             switch (cmdArgs.model) {
                 case "LFLDA":
+
                     LFLDA lflda = new LFLDA(cmdArgs.topicModel, cmdArgs.vectors,
                             cmdArgs.ntopics, cmdArgs.alpha, cmdArgs.beta, cmdArgs.lambda, cmdArgs.ndocs,
                             cmdArgs.niters, cmdArgs.twords, cmdArgs.savestep);

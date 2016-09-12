@@ -124,7 +124,7 @@ public class LFLDA {
         savestep = inSaveStep;
         this.embeddingModelPath = embeddingModel;
         embeddingFileName = Paths.get(embeddingModelPath).getFileName().toString();
-        vectorFilePath = embeddingModel + ".txt";
+        vectorFilePath = pathToTopicModel.replaceAll("/model$", "/") + embeddingFileName + ".restricted.vocab.embedding.txt";
         topicModelPath = pathToTopicModel;
         numDocuments = ndocs;
 
@@ -348,12 +348,12 @@ public class LFLDA {
 
             if (savestep > 0 && iter % savestep == 0 && iter < numIterations) {
                 System.out.println("\t\tSaving the output from the " + iter + "^{th} sample");
-                writer.write(String.format("%03d", new Integer(iter)));
+                writer.write(iter);
             }
         }
 
         System.out.println("Writing output from the last sample ...");
-        writer.write(String.valueOf(numIterations));
+        writer.write(numIterations);
 
         System.out.println("Sampling completed!");
     }

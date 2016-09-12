@@ -116,7 +116,7 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeDocTopicPros(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + name + ".theta"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + name + ".document-topics"));
 
         for (int i = 0; i < lflda.numDocuments; i++) {
             for (int j = 0; j < lflda.numTopics; j++) {
@@ -128,12 +128,12 @@ public class LFLDATopicModelWriter {
         writer.close();
     }
 
-    public void write(String name) throws IOException {
-        name = "iteration-" + name;
+    public void write(int iteration) throws IOException {
+        String name = String.format("iteration-%03d", iteration);
         writeTopTopicalWords(name);
-        if (name.equals(String.valueOf(this.lflda.numIterations))) {
+        writeDocTopicPros(name);
+        if (iteration == this.lflda.numIterations) {
             writeParameters();
-            writeDocTopicPros(name);
             writeTopicAssignments(name);
             writeTopicWordPros(name);
         }
