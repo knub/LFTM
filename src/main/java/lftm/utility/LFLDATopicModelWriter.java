@@ -121,7 +121,10 @@ public class LFLDATopicModelWriter {
         for (int i = 0; i < lflda.numDocuments; i++) {
             for (int j = 0; j < lflda.numTopics; j++) {
                 double pro = (lflda.docTopicCount[i][j] + lflda.alpha) / (lflda.sumDocTopicCount[i] + lflda.alphaSum);
-                writer.write(pro + " ");
+                if (j == 0)
+                    writer.write("" + pro);
+                else
+                    writer.write(" " + pro);
             }
             writer.write("\n");
         }
