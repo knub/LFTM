@@ -18,11 +18,11 @@ public class LFLDATopicModelWriter {
     public LFLDATopicModelWriter(LFLDA lflda ) {
         this.lflda = lflda;
         String topicFolder = new File(lflda.topicModelPath).getParent();
-        File resultsFile = new File(String.format("%s/lflda.dim-%d.lambda-%s.alpha-%s.beta-%s",
+        File resultsFile = new File(String.format("%s/lflda.dim-%d.lambda-%s.alphasum-%s.beta-%s",
                 topicFolder,
                 lflda.numDimensions,
                 String.valueOf(lflda.lambda).replace('.', '-'),
-                String.valueOf(lflda.alpha).replace('.', '-'),
+                String.valueOf(lflda.alphaSum).replace('.', '-'),
                 String.valueOf(lflda.beta).replace('.', '-')
         ));
         resultsFile.mkdir();
@@ -36,7 +36,7 @@ public class LFLDATopicModelWriter {
         writer.write("\n-topicmodel" + "\t" + lflda.topicModelPath);
         writer.write("\n-vectors" + "\t" + lflda.vectorFilePath);
         writer.write("\n-ntopics" + "\t" + lflda.numTopics);
-        writer.write("\n-alpha" + "\t" + lflda.alpha);
+        writer.write("\n-alpha-sum" + "\t" + lflda.alphaSum);
         writer.write("\n-beta" + "\t" + lflda.beta);
         writer.write("\n-lambda" + "\t" + lflda.lambda);
         writer.write("\n-niters" + "\t" + lflda.numIterations);
@@ -120,7 +120,7 @@ public class LFLDATopicModelWriter {
 
         for (int i = 0; i < lflda.numDocuments; i++) {
             for (int j = 0; j < lflda.numTopics; j++) {
-                double pro = (lflda.docTopicCount[i][j] + lflda.alpha) / (lflda.sumDocTopicCount[i] + lflda.alphaSum);
+                double pro = (lflda.docTopicCount[i][j] + lflda.alpha[j]) / (lflda.sumDocTopicCount[i] + lflda.alphaSum);
                 if (j == 0)
                     writer.write("" + pro);
                 else

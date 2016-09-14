@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("ALL")
 public class LFLDA {
-    public double alpha; // Hyper-parameter alpha
-    public double beta; // Hyper-parameter alpha
+    public double[] alpha; // Hyper-parameter alpha
+    public double beta; // Hyper-parameter beta
     public double alphaSum; // alpha * numTopics
     public double betaSum; // beta * vocabularySize
 
@@ -112,11 +112,9 @@ public class LFLDA {
     }
 
     public LFLDA(String pathToTopicModel, String embeddingModel,
-                 int inNumTopics, double inAlpha, double inBeta, double inLambda, int ndocs,
+                 int inNumTopics, String inAlpha, String inBeta, double inLambda, int ndocs,
                  int inNumIterations, int inTopWords, int inSaveStep)
         throws Exception {
-        alpha = inAlpha;
-        beta = inBeta;
         lambda = inLambda;
         numTopics = inNumTopics;
         numIterations = inNumIterations;
@@ -128,10 +126,31 @@ public class LFLDA {
         topicModelPath = pathToTopicModel;
         numDocuments = ndocs;
 
+        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, embeddingModel + ".vocab");
+        if (inAlpha.equals("TM")) {
+            alpha = tm.alpha;
+            alphaSum = tm.alphaSum;
+            double avgAlpha = alphaSum / numTopics;
+            System.out.println("Taking alpha from topic model, avg alpha = " + avgAlpha);
+        } else {
+            alpha = new double[numTopics];
+            double parsedAlpha = Double.parseDouble(inAlpha);
+            Arrays.fill(alpha, parsedAlpha);
+            System.out.println("Taking specified alpha " + inAlpha);
+            alphaSum = parsedAlpha * numTopics;
+        }
+        if (inBeta.equals("TM")) {
+            beta = tm.beta;
+            System.out.println("Taking beta from topic model: " + beta);
+        } else {
+            beta = Double.parseDouble(inBeta);
+            System.out.println("Taking specified beta: " + inBeta);
+        }
+        betaSum = vocabularySize * beta;
+
         System.out.println("Starting with " + FreeMemory.get(false, 0) + " MB");
         System.out.println("Reading topic model: " + pathToTopicModel);
         vocabularySize = getVectorWords(this.topicModelPath + "." + embeddingFileName + ".restricted.vocab").size();
-//        TopicModelInfo tm = loadTopicModelInfo(pathToTopicModel, embeddingModel + ".vocab");
 
         corpus = new ArrayList<IntArrayList>(numDocuments);
         topicAssignments = new ArrayList<IntArrayList>(numDocuments);
@@ -148,9 +167,6 @@ public class LFLDA {
         for (int i = 0; i < numTopics * 2; i++) {
             multiPros[i] = 1.0 / numTopics;
         }
-
-        alphaSum = numTopics * alpha;
-        betaSum = vocabularySize * beta;
 
         System.out.println("Corpus size: " + numDocuments + " docs");
         System.out.println("Vocabulary size: " + vocabularySize);
@@ -256,23 +272,22 @@ public class LFLDA {
     }
 
     class TopicModelInfo {
-        public TopicModelInfo(Alphabet wordAlphabet, int vocabularySize) {
-            this.wordAlphabet = wordAlphabet;
-            this.vocabularySize = vocabularySize;
-        }
+        public double[] alpha;
+        public double alphaSum;
+        public double beta;
 
-        public Alphabet wordAlphabet;
-        public int vocabularySize;
+        public TopicModelInfo(double[] alpha, double alphaSum, double beta) {
+            this.alpha = alpha;
+            this.alphaSum = alphaSum;
+            this.beta = beta;
+        }
     }
     private TopicModelInfo loadTopicModelInfo(String pathToTopicModel, String pathToVectorWords) throws Exception {
         System.out.println("Loading topic model info " + pathToTopicModel);
         ParallelTopicModel tm = ParallelTopicModel.read(
                 new File(pathToTopicModel));
-        System.out.println("Memory: " + FreeMemory.get(true, 15) + " MB");
 
-        Alphabet alp = tm.getAlphabet();
-        vocabularySize = determineVocabularySize(tm, getVectorWords(pathToVectorWords));
-        return new TopicModelInfo(alp, vocabularySize);
+        return new TopicModelInfo(tm.alpha, tm.alphaSum, tm.beta);
     }
     private static Set<String> getVectorWords(String pathToVectorWords) throws Exception {
         Set<String> vectorWords = new HashSet<>();
@@ -448,10 +463,10 @@ public class LFLDA {
                 // Sample a pair of topic z and binary indicator variable s
                 for (int tIndex = 0; tIndex < numTopics; tIndex++) {
 
-                    multiPros[tIndex] = (docTopicCount[dIndex][tIndex] + alpha) * lambda
+                    multiPros[tIndex] = (docTopicCount[dIndex][tIndex] + alpha[tIndex]) * lambda
                             * expDotProductValues[tIndex][word] / sumExpValues[tIndex];
 
-                    multiPros[tIndex + numTopics] = (docTopicCount[dIndex][tIndex] + alpha)
+                    multiPros[tIndex + numTopics] = (docTopicCount[dIndex][tIndex] + alpha[tIndex])
                             * (1 - lambda) * (topicWordCountLDA[tIndex][word] + beta)
                             / (sumTopicWordCountLDA[tIndex] + betaSum);
 

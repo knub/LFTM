@@ -21,10 +21,10 @@ public class CmdArgs
     public int ntopics = 256;
 
     @Option(name = "-alpha", usage = "Specify alpha")
-    public double alpha = 0.01;
+    public String alpha = "TM";
 
     @Option(name = "-beta", usage = "Specify beta")
-    public double beta = 0.01;
+    public String beta = "TM";
 
     @Option(name = "-lambda", usage = "Specify mixture weight lambda")
     public double lambda = 0.6;
