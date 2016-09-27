@@ -116,7 +116,7 @@ public class Main
         // for all documents
         Alphabet wordAlphabet = tm.getAlphabet();
         ArrayList<TopicAssignment> data = tm.getData();
-        System.out.println("There are " + data.size() + " documents");
+        System.out.println("There are " + data.size() + " documents before");
         Counter<String> c = new Counter<>();
         for (TopicAssignment doc : data) {
             String clazz = doc.instance.getTarget().toString();
