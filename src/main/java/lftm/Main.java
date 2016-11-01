@@ -119,7 +119,7 @@ public class Main
         System.out.println("There are " + data.size() + " documents before");
         Counter<String> c = new Counter<>();
         for (TopicAssignment doc : data) {
-            String clazz = doc.instance.getTarget().toString();
+            String clazz = doTrackClasses ? doc.instance.getTarget().toString() : "NULL";
 
             int[] wordFeatures = ((FeatureSequence) doc.instance.getData()).getFeatures();
             int[] topicFeatures = doc.topicSequence.getFeatures();
