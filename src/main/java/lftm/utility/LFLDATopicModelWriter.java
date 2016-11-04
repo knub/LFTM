@@ -70,7 +70,9 @@ public class LFLDATopicModelWriter {
     }
 
     public void writeTopTopicalWords(String name) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(baseName + name + ".topics"));
+        BufferedWriter writer = lflda.topWords == 10 ?
+                new BufferedWriter(new FileWriter(baseName + name + ".topics")) :
+                new BufferedWriter(new FileWriter(baseName + name + "." + lflda.topWords + ".topics"));
 
         for (int tIndex = 0; tIndex < lflda.numTopics; tIndex++) {
             writer.write(String.valueOf(tIndex));
@@ -139,6 +141,8 @@ public class LFLDATopicModelWriter {
             writeParameters();
             writeTopicAssignments(name);
             writeTopicWordPros(name);
+            this.lflda.topWords = 500;
+            writeTopTopicalWords(name);
         }
     }
 }
