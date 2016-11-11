@@ -135,6 +135,7 @@ public class LFLDATopicModelWriter {
 
     public void write(int iteration) throws IOException {
         String name = String.format("iteration-%03d", iteration);
+        this.lflda.topWords = 10;
         writeTopTopicalWords(name);
         writeDocTopicPros(name);
         if (iteration == this.lflda.numIterations) {
