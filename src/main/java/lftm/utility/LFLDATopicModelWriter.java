@@ -144,6 +144,11 @@ public class LFLDATopicModelWriter {
             writeTopicWordPros(name);
             this.lflda.topWords = 500;
             writeTopTopicalWords(name);
+            return;
+        }
+        if (iteration % 20 == 0) {
+            this.lflda.topWords = 500;
+            writeTopTopicalWords(name);
         }
     }
 }
